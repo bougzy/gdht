@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Galaxy Digital Holdings</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --admin-color: #8e44ad;
+            --admin-dark: #6c3483;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background-color: var(--primary-color);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white !important;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--admin-dark) 0%, var(--admin-color) 100%);
+            padding: 20px;
+        }
+        
+        .auth-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--admin-color);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .btn-admin-custom {
+            background-color: var(--admin-color);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-admin-custom:hover {
+            background-color: var(--admin-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-control:focus {
+            border-color: var(--admin-color);
+            box-shadow: 0 0 0 0.2rem rgba(142, 68, 173, 0.25);
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            color: var(--admin-color);
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list i {
+            color: var(--admin-color);
+            margin-right: 10px;
+        }
+        
+        .toggle-link {
+            color: var(--admin-color);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .toggle-link:hover {
+            color: var(--admin-dark);
+            text-decoration: underline;
+        }
+        
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+        
+        .form-control {
+            border-left: none;
+        }
+        
+        .security-notice {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--admin-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-rocket me-2"></i>Galaxy Digital Holdings
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">User Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="register.html">User Register</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin-login.html">Admin Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Login Form -->
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-shield feature-icon"></i>
+            </div>
+            <h2 class="auth-title">Admin Login</h2>
+            <p class="text-center text-muted mb-4">Access the administration panel</p>
+            
+            <div id="adminLoginAlert" class="alert d-none"></div>
+            <form id="adminLoginForm">
+                <div class="mb-3">
+                    <label for="adminUsername" class="form-label">Admin Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user-cog"></i></span>
+                        <input type="text" class="form-control" id="adminUsername" placeholder="Enter admin username" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="adminPassword" class="form-label">Admin Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-key"></i></span>
+                        <input type="password" class="form-control" id="adminPassword" placeholder="Enter admin password" required>
+                    </div>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="adminRememberMe">
+                    <label class="form-check-label" for="adminRememberMe">Remember this device</label>
+                </div>
+                <button type="submit" class="btn btn-admin-custom w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login to Admin Panel
+                </button>
+            </form>
+            
+            <div class="text-center">
+                <p>Are you a regular user? <a href="login.html" class="toggle-link">Go to User Login</a></p>
+                <p><a href="#" class="toggle-link" data-bs-toggle="modal" data-bs-target="#adminHelpModal">Need admin assistance?</a></p>
+            </div>
+            
+            <div class="security-notice">
+                <h6><i class="fas fa-shield-alt me-2"></i>Security Notice</h6>
+                <p class="mb-0 small">Admin access is restricted to authorized personnel only. Unauthorized access attempts will be logged and may result in legal action.</p>
+            </div>
+            
+            <div class="mt-4">
+                <h5>Admin Panel Features:</h5>
+                <ul class="feature-list">
+                    <li><i class="fas fa-check-circle"></i> Manage user accounts and permissions</li>
+                    <li><i class="fas fa-check-circle"></i> Approve deposits and withdrawals</li>
+                    <li><i class="fas fa-check-circle"></i> Monitor investment activities</li>
+                    <li><i class="fas fa-check-circle"></i> View system analytics and reports</li>
+                    <li><i class="fas fa-check-circle"></i> Send notifications to users</li>
+                    <li><i class="fas fa-check-circle"></i> Configure system settings</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Help Modal -->
+    <div class="modal fade" id="adminHelpModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Admin Assistance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>If you need assistance with admin access, please contact the system administrator:</p>
+                    <ul class="mb-3">
+                        <li><strong>Email:</strong> admin@galaxydigital.com</li>
+                        <li><strong>Phone:</strong> +1 (555) 123-4567</li>
+                        <li><strong>Hours:</strong> Mon-Fri, 9AM-5PM EST</li>
+                    </ul>
+                    <div class="alert alert-warning">
+                        <small><i class="fas fa-exclamation-triangle me-2"></i>Admin credentials are provided to authorized personnel only. Do not share your login information.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Hardcoded Admin Credentials
+        const ADMIN_CREDENTIALS = {
+            username: 'admin',
+            password: 'admin123'
+        };
+        
+        // State management
+        let isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+        // Check if admin is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isAdmin) {
+                window.location.href = 'admin-dashboard.html';
+            }
+            
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Admin login form submission
+            document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+        }
+
+        // Handle admin login
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            const alertEl = document.getElementById('adminLoginAlert');
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Authenticating...';
+            submitBtn.disabled = true;
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                    // Successful admin login
+                    localStorage.setItem('isAdmin', 'true');
+                    isAdmin = true;
+                    
+                    // Show success message
+                    alertEl.className = 'alert alert-success';
+                    alertEl.textContent = 'Admin authentication successful! Redirecting to admin panel...';
+                    alertEl.classList.remove('d-none');
+                    
+                    // Redirect to admin dashboard after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard.html';
+                    }, 1500);
+                } else {
+                    alertEl.className = 'alert alert-danger';
+                    alertEl.textContent = 'Invalid admin credentials. Please check your username and password.';
+                    alertEl.classList.remove('d-none');
+                    
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    
+                    // Clear password field
+                    document.getElementById('adminPassword').value = '';
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
