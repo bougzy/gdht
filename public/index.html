@@ -3,219 +3,350 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galaxy Digital Holdings - Premium Investment Platform</title>
+    <title>Galaxy Digital Holdings</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1a237e;
             --secondary-color: #283593;
             --accent-color: #3949ab;
-            --highlight-color: #5c6bc0;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --light-color: #f8f9fa;
-            --dark-color: #1a1a2e;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+            --white: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-            background-color: #f8f9fa;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
             line-height: 1.6;
-            padding-top: 50px; /* Added to account for fixed navbar */
+            overflow-x: hidden;
         }
         
-        .navbar {
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Header Styles */
+        .top-header {
             background-color: var(--primary-color);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 15px 0;
-            transition: all 0.3s ease;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 10000;
+            color: white;
+            padding: 8px 0;
+            font-size: 14px;
         }
         
-        .navbar-brand {
+        .top-header a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        
+        .main-header {
+            background-color: var(--white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
             font-weight: 700;
-            font-size: 1.8rem;
-            color: white !important;
+            font-size: 24px;
+            color: var(--primary-color);
         }
         
         .nav-link {
-            color: rgba(255, 255, 255, 0.85) !important;
+            color: var(--text-color) !important;
             font-weight: 500;
             margin: 0 10px;
-            transition: color 0.3s ease;
+            transition: color 0.3s;
         }
         
         .nav-link:hover {
-            color: white !important;
+            color: var(--accent-color) !important;
         }
         
-        /* Marquee Styles */
-        .crypto-marquee {
-            background: linear-gradient(90deg, #1a1a2e, #16213e, #0f3460);
-            color: white;
-            padding: 12px 0;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            position: fixed;
-            top: 76px;
-            left: 0;
-            right: 0;
-            z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
-        .crypto-item {
-            display: inline-block;
-            margin: 0 20px;
-            padding: 5px 10px;
-            border-radius: 5px;
-            background: rgba(255, 255, 255, 0.1);
+        .dropdown-item {
+            padding: 10px 20px;
         }
         
-        .crypto-symbol {
-            font-weight: bold;
-            margin-right: 5px;
-        }
-        
-        .crypto-price.up {
-            color: var(--success-color);
-        }
-        
-        .crypto-price.down {
-            color: var(--danger-color);
-        }
-        
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            padding: 150px 0 100px;
+        /* Hero Section */
+        .hero-carousel {
             position: relative;
+            height: 100vh;
             overflow: hidden;
         }
         
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
+        .carousel-inner, .carousel-item {
+            height: 100%;
+        }
+        
+        .carousel-item {
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .hero-carousel .carousel-item img {
             width: 100%;
             height: 100%;
-            background: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTIwMCA0MDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTIwMCAzMDBjLTEwMCAwLTEwMC0xMDAtMjAwLTEwMHMtMTAwIDEwMC0yMDAgMTAwLTEwMC0xMDAtMjAwLTEwMC0xMDAgMTAwLTIwMCAxMDBWNDAwaDEyMDBWMzAweiIgZmlsbD0iI2ZmZmZmZiIgZmlsbC1vcGFjaXR5PSIwLjA4Ii8+PC9nPjwvc3ZnPg==');
-            background-size: cover;
+            object-fit: cover;
+            filter: brightness(60%);
         }
-        
-        .hero-content {
-            position: relative;
-            z-index: 1;
+
+        .hero-carousel .carousel-caption {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            animation: fadeInUp 1.5s ease-in-out;
+            width: 90%;
+            max-width: 900px;
         }
-        
-        .hero-title {
-            font-size: 3.5rem;
+
+        .hero-carousel .carousel-caption h1 {
+            font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            animation: slideInDown 1.5s ease-in-out;
+            margin-bottom: 1rem;
         }
-        
-        .hero-subtitle {
-            font-size: 1.3rem;
-            margin-bottom: 30px;
-            opacity: 0.9;
+
+        .hero-carousel .carousel-caption p {
+            font-size: 1.25rem;
+            margin: 20px 0;
+            animation: fadeIn 2s ease-in-out;
         }
-        
+
         .btn-primary-custom {
             background-color: var(--accent-color);
             border: none;
             padding: 12px 30px;
             font-weight: 600;
             border-radius: 30px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary-custom:hover {
-            background-color: var(--highlight-color);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-outline-custom {
-            border: 2px solid white;
+            transition: all 0.3s;
             color: white;
-            background: transparent;
-            padding: 10px 28px;
-            font-weight: 600;
-            border-radius: 30px;
-            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary-custom:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: white;
         }
         
-        .btn-outline-custom:hover {
-            background: white;
-            color: var(--primary-color);
+        .carousel-control-prev, .carousel-control-next {
+            width: 5%;
         }
         
+        .carousel-indicators {
+            bottom: 30px;
+        }
+        
+        .carousel-indicators button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 0 5px;
+        }
+        
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -30%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+        
+        /* Marquee Section */
+        .marquee-section {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 15px 0;
+            overflow: hidden;
+        }
+        
+        .marquee-content {
+            display: flex;
+            animation: marquee 30s linear infinite;
+        }
+        
+        .marquee-item {
+            white-space: nowrap;
+            margin-right: 50px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .marquee-item i {
+            margin-right: 10px;
+            color: #ffc107;
+        }
+        
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Features Section */
         .features-section {
-            padding: 100px 0;
+            padding: 80px 0;
+            background-color: var(--light-bg);
         }
         
         .section-title {
-            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 50px;
             font-weight: 700;
-            margin-bottom: 15px;
             color: var(--primary-color);
         }
         
-        .section-subtitle {
-            font-size: 1.1rem;
-            color: #7f8c8d;
-            margin-bottom: 60px;
-        }
-        
         .feature-card {
-            border: none;
+            background-color: white;
             border-radius: 10px;
             padding: 30px;
             text-align: center;
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
             height: 100%;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
         
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
         
         .feature-icon {
-            font-size: 3rem;
+            font-size: 40px;
             color: var(--accent-color);
             margin-bottom: 20px;
         }
         
         .feature-title {
-            font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 15px;
             color: var(--primary-color);
         }
         
-        .video-section {
-            background-color: var(--light-color);
-            padding: 100px 0;
+        /* Services Section */
+        .services-section {
+            padding: 80px 0;
+        }
+        
+        .service-card {
+            border: none;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            margin-bottom: 30px;
+            height: 100%;
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .service-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .service-body {
+            padding: 25px;
+        }
+        
+        .service-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        /* About Section */
+        .about-section {
+            padding: 80px 0;
+            background-color: var(--light-bg);
+        }
+        
+        .about-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .about-text {
+            padding-right: 30px;
+        }
+        
+        .about-img {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+        
+        /* Videos Section */
+        .videos-section {
+            padding: 80px 0;
+            background-color: var(--white);
         }
         
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
             height: 0;
             overflow: hidden;
             border-radius: 10px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
         }
         
         .video-container iframe {
@@ -224,183 +355,62 @@
             left: 0;
             width: 100%;
             height: 100%;
-            border: 0;
+            border: none;
         }
         
-        .faq-section {
-            padding: 100px 0;
-        }
-        
-        .accordion-button {
-            font-weight: 600;
-            padding: 20px;
-        }
-        
-        .accordion-button:not(.collapsed) {
-            background-color: var(--light-color);
-            color: var(--primary-color);
-        }
-        
-        .footer {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 70px 0 20px;
-        }
-        
-        .footer h5 {
-            font-weight: 600;
-            margin-bottom: 25px;
-            position: relative;
-        }
-        
-        .footer h5::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -10px;
-            width: 40px;
-            height: 3px;
-            background-color: var(--accent-color);
-        }
-        
-        .footer-links {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .footer-links li {
-            margin-bottom: 10px;
-        }
-        
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        
-        .footer-links a:hover {
-            color: white;
-            padding-left: 5px;
-        }
-        
-        .social-icons a {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
+        .video-description {
+            padding: 20px 0;
             text-align: center;
-            line-height: 40px;
-            margin-right: 10px;
-            transition: all 0.3s ease;
         }
         
-        .social-icons a:hover {
-            background-color: var(--accent-color);
-            transform: translateY(-5px);
-        }
-        
-        .copyright {
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 20px;
-            margin-top: 40px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .stats-section {
-            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            color: white;
+        /* Certificates Section */
+        .certificates-section {
             padding: 80px 0;
+            background-color: var(--light-bg);
         }
         
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .stat-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .investment-plans {
-            padding: 100px 0;
-            background-color: var(--light-color);
-        }
-        
-        .plan-card {
-            border-radius: 15px;
+        .certificate-card {
+            background-color: white;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            margin-bottom: 30px;
             height: 100%;
         }
         
-        .plan-card:hover {
+        .certificate-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
         }
         
-        .plan-header {
-            padding: 30px;
-            color: white;
+        .certificate-img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+        
+        .certificate-body {
+            padding: 25px;
             text-align: center;
         }
         
-        .plan-basic .plan-header {
-            background: linear-gradient(135deg, #6c757d, #495057);
+        .certificate-title {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
         }
         
-        .plan-pro .plan-header {
-            background: linear-gradient(135deg, var(--accent-color), var(--highlight-color));
-        }
-        
-        .plan-premium .plan-header {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-        }
-        
-        .plan-price {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 15px 0;
-        }
-        
-        .plan-features {
-            padding: 30px;
-            background: white;
-        }
-        
-        .plan-features ul {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .plan-features li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .plan-features li:last-child {
-            border-bottom: none;
-        }
-        
-        .plan-features li i {
-            color: var(--success-color);
-            margin-right: 10px;
-        }
-        
+        /* Testimonials Section */
         .testimonials-section {
-            padding: 100px 0;
+            padding: 80px 0;
         }
         
         .testimonial-card {
+            background-color: white;
             border-radius: 10px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin: 15px 0;
             height: 100%;
         }
         
@@ -414,133 +424,978 @@
             align-items: center;
         }
         
-        .testimonial-avatar {
-            width: 60px;
-            height: 60px;
+        .author-img {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             margin-right: 15px;
+            object-fit: cover;
+        }
+        
+        .author-info h5 {
+            margin-bottom: 0;
+            font-weight: 600;
+        }
+        
+        .author-info p {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            padding: 80px 0;
+            background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(26, 35, 126, 0.9)), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+        }
+        
+        .stat-item {
+            margin-bottom: 30px;
+        }
+        
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-text {
+            font-size: 18px;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            padding: 80px 0;
+            background-color: var(--light-bg);
+        }
+        
+        .contact-form {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 0.2rem rgba(57, 73, 171, 0.25);
+        }
+        
+        /* New Sections */
+        .how-it-works-section {
+            padding: 80px 0;
+            background-color: var(--white);
+        }
+        
+        .step-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .step-number {
+            position: absolute;
+            top: 15px;
+            left: 15px;
             background-color: var(--accent-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 18px;
         }
         
-        .trading-tools {
-            padding: 100px 0;
-            background-color: var(--light-color);
+        .referral-section {
+            padding: 80px 0;
+            background-color: var(--light-bg);
         }
         
-        .tool-card {
+        .referral-card {
+            background-color: white;
             border-radius: 10px;
             padding: 30px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
             height: 100%;
-            transition: all 0.3s ease;
         }
         
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        .referral-card:hover {
+            transform: translateY(-10px);
         }
         
-        .tool-icon {
-            font-size: 2.5rem;
-            color: var(--accent-color);
-            margin-bottom: 20px;
+        .commission-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
         }
         
-        /* Responsive Adjustments */
-        @media (max-width: 768px) {
-            body {
-                padding-top: 130px; /* Adjusted for navbar + marquee on mobile */
-            }
-            
-            .crypto-marquee {
-                top: 56px;
-            }
-            
-            .hero-title {
+        .activity-section {
+            padding: 80px 0;
+            background-color: var(--white);
+        }
+        
+        .activity-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            height: 100%;
+        }
+        
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .activity-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .activity-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .why-choose-section {
+            padding: 80px 0;
+            background-color: var(--light-bg);
+        }
+        
+        .nav-tabs {
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--text-color);
+            font-weight: 500;
+            padding: 12px 25px;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tab-content {
+            padding: 30px 0;
+        }
+        
+        .tab-pane {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .tab-image {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 60px 0 0;
+        }
+        
+        .footer-title {
+            font-weight: 600;
+            margin-bottom: 25px;
+            font-size: 18px;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #ddd;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .social-links {
+            display: flex;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            margin-right: 10px;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            background-color: var(--secondary-color);
+            padding: 20px 0;
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        /* Language Selector */
+        .language-selector {
+            position: relative;
+        }
+        
+        .language-dropdown {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        .language-dropdown option {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .hero-carousel .carousel-caption h1 {
                 font-size: 2.5rem;
             }
             
-            .hero-subtitle {
+            .hero-carousel .carousel-caption p {
                 font-size: 1.1rem;
             }
+        }
+        
+        @media (max-width: 992px) {
+            .hero-carousel {
+                height: 70vh;
+            }
             
-            .section-title {
-                font-size: 2rem;
+            .hero-carousel .carousel-caption h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-carousel .carousel-caption p {
+                font-size: 1rem;
+            }
+            
+            .about-content {
+                flex-direction: column;
+            }
+            
+            .about-text {
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            .feature-card, .service-card, .certificate-card, .testimonial-card {
+                margin-bottom: 20px;
             }
             
             .stat-number {
-                font-size: 2.5rem;
+                font-size: 36px;
+            }
+            
+            .stat-text {
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-carousel {
+                height: 60vh;
+            }
+            
+            .hero-carousel .carousel-caption h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero-carousel .carousel-caption p {
+                font-size: 0.9rem;
+            }
+            
+            .btn-primary-custom {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+                margin-bottom: 30px;
+            }
+            
+            .features-section, .services-section, .about-section, 
+            .videos-section, .certificates-section, .testimonials-section,
+            .stats-section, .contact-section {
+                padding: 50px 0;
+            }
+            
+            .feature-card, .service-card, .certificate-card {
+                padding: 20px;
+            }
+            
+            .contact-form {
+                padding: 25px;
+            }
+            
+            .footer {
+                padding: 40px 0 0;
+            }
+            
+            .top-header .d-flex {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .top-header .d-flex > div {
+                margin-bottom: 10px;
+            }
+            
+            .top-header a {
+                margin-right: 10px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-carousel {
+                height: 50vh;
+            }
+            
+            .hero-carousel .carousel-caption h1 {
+                font-size: 1.5rem;
+            }
+            
+            .hero-carousel .carousel-caption p {
+                font-size: 0.8rem;
+                margin: 10px 0;
+            }
+            
+            .btn-primary-custom {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .feature-icon {
+                font-size: 30px;
+            }
+            
+            .feature-title, .service-title, .certificate-title {
+                font-size: 1.1rem;
+            }
+            
+            .stat-number {
+                font-size: 28px;
+            }
+            
+            .stat-text {
+                font-size: 14px;
+            }
+            
+            .testimonial-card {
+                padding: 20px;
+            }
+            
+            .footer-title {
+                font-size: 1.1rem;
+            }
+            
+            .copyright p {
+                font-size: 0.9rem;
+            }
+            
+            .carousel-indicators {
+                bottom: 15px;
+            }
+            
+            .carousel-indicators button {
+                width: 8px;
+                height: 8px;
+            }
+            
+            .marquee-item {
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .hero-carousel {
+                height: 45vh;
+            }
+            
+            .hero-carousel .carousel-caption h1 {
+                font-size: 1.3rem;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .top-header {
+                font-size: 0.8rem;
+            }
+            
+            .top-header a {
+                font-size: 0.8rem;
+            }
+            
+            .language-dropdown {
+                font-size: 0.8rem;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Crypto Marquee -->
-    <div class="crypto-marquee" id="cryptoMarquee">
-        <marquee behavior="scroll" direction="left" id="marqueeContent">
-            Loading cryptocurrency prices...
-        </marquee>
-    </div>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- Top Header -->
+    <div class="top-header">
         <div class="container">
-            <a class="navbar-brand" href="index.html">
-                <i class="fas fa-rocket me-2"></i>Galaxy Digital Holdings
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="index.html">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="investments.html">Investments</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="trading.html">Trading</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="education.html">Education</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="about.html">About</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.html">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-outline-light btn-sm ms-2" href="register.html">Register</a>
-                    </li>
-                </ul>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-wrap">
+                    <a href="#"><i class="fas fa-phone-alt me-2"></i> +1 (800) 123-4567</a>
+                    <a href="#"><i class="fas fa-envelope me-2"></i> info@galaxydigital.com</a>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="language-selector me-3">
+                        <select class="language-dropdown">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                            <option value="de">Deutsch</option>
+                            <option value="zh">中文</option>
+                        </select>
+                    </div>
+                    <a href="login.html"><i class="fas fa-user me-2"></i> Login</a>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero-section" id="home">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 hero-content">
-                    <h1 class="hero-title">Premium Investment & Trading Solutions</h1>
-                    <p class="hero-subtitle">Join Galaxy Digital Holdings to access cutting-edge investment opportunities, advanced trading tools, and expert market insights to grow your wealth.</p>
-                    <div class="hero-buttons">
-                        <a href="register.html" class="btn btn-primary-custom me-3">Start Investing</a>
-                        <a href="#features" class="btn btn-outline-custom">Learn More</a>
+    <!-- Main Header -->
+    <header class="main-header">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand logo" href="#">Galaxy Digital Holdings</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#home">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Services
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="#services">Investment Management</a></li>
+                                <li><a class="dropdown-item" href="#services">Trading & Market Making</a></li>
+                                <li><a class="dropdown-item" href="#services">Asset Management</a></li>
+                                <li><a class="dropdown-item" href="#services">Principal Investments</a></li>
+                                <li><a class="dropdown-item" href="#services">Advisory Services</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#how-it-works">How It Works</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#referral">Referral</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#activity">Activity</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#why-choose">Why Choose Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section with Carousel -->
+    <section class="hero-carousel" id="home">
+        <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+            </div>
+
+            <div class="carousel-inner">
+                <!-- Slide 1 -->
+                <div class="carousel-item active">
+                    <img src="https://images.unsplash.com/photo-1620207418302-439b387441b0?auto=format&fit=crop&w=1500&q=80" alt="Digital Asset">
+                    <div class="carousel-caption">
+                        <h1>Global Digital Asset & Blockchain Leader</h1>
+                        <p>Galaxy Digital Holdings is a diversified financial services and investment management company in the digital asset, cryptocurrency, and blockchain technology sector.</p>
+                        <a href="register.html" class="btn btn-primary-custom">
+                            <span class="loading-spinner"></span>Invest Now
+                        </a>
                     </div>
                 </div>
-                <div class="col-lg-6 text-center">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDUwMCA0MDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMyODM1OTMiLz48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjEiIGN4PSIyNTAiIGN5PSIyMDAiIHI9IjE1MCIvPjxjaXJjbGUgZmlsbD0iI2ZmZiIgZmlsbC1vcGFjaXR5PSIwLjA1IiBjeD0iMjUwIiBjeT0iMjAwIiByPSIyMDAiLz48cGF0aCBkPSJNMzUwIDIwMEMzNTAgMjc2LjE0IDI4Ni4xNCAzNDAgMjEwIDM0MFM3MCAyNzYuMTQgNzAgMjAwUzEzMy44NiA2MCAyMTAgNjBzMTQwIDc2LjE0IDE0MCAxNDB6IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMiIvPjxwYXRoIGQ9Ik0yMTAgMjUwYy0yNy42MSAwLTUwLTIyLjM5LTUwLTUwczIyLjM5LTUwIDUwLTUwIDUwIDIyLjM5IDUwIDUwLTIyLjM5IDUwLTUwIDUweiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0yMTAgMTcwYy0xNi41NyAwLTMwLTEzLjQzLTMwLTMwczEzLjQzLTMwIDMwLTMwIDMwIDEzLjQzIDMwIDMwLTEzLjQzIDMwLTMwIDMweiIgZmlsbD0iIzVjNmJjMCIvPjwvZz48L3N2Zz4=" 
-                         alt="Investment Platform" class="img-fluid">
+
+                <!-- Slide 2 -->
+                <div class="carousel-item">
+                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1500&q=80" alt="Financial Solutions">
+                    <div class="carousel-caption">
+                        <h1>Innovative Financial Solutions</h1>
+                        <p>Providing institutions and direct clients with a full suite of financial solutions spanning the digital assets ecosystem.</p>
+                        <a href="register.html" class="btn btn-primary-custom">
+                            <span class="loading-spinner"></span>Get Started
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Slide 3 -->
+                <div class="carousel-item">
+                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1500&q=80" alt="Secure Platform">
+                    <div class="carousel-caption">
+                        <h1>Secure & Regulated Platform</h1>
+                        <p>Our platform operates with the highest security standards and regulatory compliance to protect your investments.</p>
+                        <a href="register.html" class="btn btn-primary-custom">
+                            <span class="loading-spinner"></span>Join Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Marquee Section -->
+    <section class="marquee-section">
+        <div class="marquee-content">
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>BTC: $45,230.15 +2.5%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>ETH: $3,215.67 +1.8%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>SOL: $102.45 +5.2%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>ADA: $0.58 +0.8%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>DOT: $7.32 +3.1%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>XRP: $0.62 -0.5%</span>
+            </div>
+            <div class="marquee-item">
+                <i class="fas fa-chart-line"></i>
+                <span>LTC: $72.18 +1.2%</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose Galaxy Digital Holdings</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 class="feature-title">Secure & Regulated</h4>
+                        <p>Our platform operates with the highest security standards and regulatory compliance to protect your investments.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h4 class="feature-title">Advanced Technology</h4>
+                        <p>Leverage cutting-edge blockchain technology and trading infrastructure for optimal performance.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <h4 class="feature-title">Diverse Investment Options</h4>
+                        <p>Access a wide range of digital assets and investment products tailored to your financial goals.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card service-card">
+                        <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top service-img" alt="Trading">
+                        <div class="card-body service-body">
+                            <h5 class="card-title service-title">Trading & Market Making</h5>
+                            <p class="card-text">Comprehensive trading services across multiple digital assets with deep liquidity and competitive pricing.</p>
+                            <a href="#" class="btn btn-primary-custom">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card service-card">
+                        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top service-img" alt="Asset Management">
+                        <div class="card-body service-body">
+                            <h5 class="card-title service-title">Asset Management</h5>
+                            <p class="card-text">Professional management of digital asset portfolios for institutional and accredited investors.</p>
+                            <a href="#" class="btn btn-primary-custom">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card service-card">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="card-img-top service-img" alt="Investment Banking">
+                        <div class="card-body service-body">
+                            <h5 class="card-title service-title">Investment Banking</h5>
+                            <p class="card-text">Strategic advisory and capital raising services for blockchain and digital asset companies.</p>
+                            <a href="#" class="btn btn-primary-custom">Learn More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="row about-content">
+                <div class="col-md-6 about-text">
+                    <h2 class="section-title text-start">About Galaxy Digital Holdings</h2>
+                    <p>Galaxy Digital Holdings Ltd. is a technology-driven financial services and investment management firm that provides institutions and direct clients with a full suite of financial solutions spanning the digital assets ecosystem.</p>
+                    <p>Founded in 2018, our company has grown to become a global leader in the digital asset space, with offices in New York, London, Hong Kong, and Singapore.</p>
+                    <p>Our diverse team of professionals brings decades of experience from traditional finance and emerging technology sectors, allowing us to bridge the gap between conventional financial markets and the digital asset ecosystem.</p>
+                    <a href="#" class="btn btn-primary-custom mt-3">Our Story</a>
+                </div>
+                <div class="col-md-6">
+                    <img src="https://images.unsplash.com/photo-1639762681057-408e52192e55?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="img-fluid about-img" alt="About Us">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works-section" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Follow These Three Simple Steps to Join Us!</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <div class="feature-icon">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h4 class="feature-title">Log on to our website</h4>
+                        <p>On our website, click the JOIN NOW button to begin your investment journey.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <div class="feature-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4 class="feature-title">Create a free account</h4>
+                        <p>Provide your details to create a free account and verify your identity.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="feature-title">Select an investment</h4>
+                        <p>Choose a plan and deposit to start earning with our diverse investment options.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="register.html" class="btn btn-primary-custom">
+                    <span class="loading-spinner"></span>Start Investing Now
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Referral Section -->
+    <section class="referral-section" id="referral">
+        <div class="container">
+            <h2 class="section-title">REFERRAL PROGRAM</h2>
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="referral-card text-center">
+                        <div class="commission-badge">5.00% Commission</div>
+                        <h3 class="mb-4">Share Your Link & Earn Rewards</h3>
+                        <p class="mb-4">Join our multi-level referral program and get additional income by inviting new investors to the platform. Share your referral link and get 5% of the deposits of your direct referrals made from an external wallet on any plans of the system.</p>
+                        <div class="input-group mb-4">
+                            <input type="text" class="form-control" value="https://galaxydigital.com/ref/yourusername" readonly>
+                            <button class="btn btn-primary-custom" type="button">Copy Link</button>
+                        </div>
+                        <a href="#" class="btn btn-primary-custom">View Referral Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Activity Section -->
+    <section class="activity-section" id="activity">
+        <div class="container">
+            <h2 class="section-title">Recent Platform Activity</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="activity-card">
+                        <h4 class="mb-4"><i class="fas fa-arrow-down text-success me-2"></i> Latest Deposits</h4>
+                        <ul class="activity-list">
+                            <li>
+                                <span>Giovanni Santamaria</span>
+                                <span class="text-success">$1250.00</span>
+                            </li>
+                            <li>
+                                <span>Giovanni Santamaria</span>
+                                <span class="text-success">$50.00</span>
+                            </li>
+                            <li>
+                                <span>Ricardo Bryant</span>
+                                <span class="text-success">$4710.00</span>
+                            </li>
+                            <li>
+                                <span>Tristin Hicks</span>
+                                <span class="text-success">$3840.00</span>
+                            </li>
+                            <li>
+                                <span>Joshua Ford</span>
+                                <span class="text-success">$45763.00</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="activity-card">
+                        <h4 class="mb-4"><i class="fas fa-arrow-up text-danger me-2"></i> Latest Withdrawals</h4>
+                        <ul class="activity-list">
+                            <li>
+                                <span>Keith Gentry</span>
+                                <span class="text-danger">$22960.00</span>
+                            </li>
+                            <li>
+                                <span>Arthur Lee</span>
+                                <span class="text-danger">$10019.00</span>
+                            </li>
+                            <li>
+                                <span>Sirpa Heinimäki</span>
+                                <span class="text-danger">$1000.00</span>
+                            </li>
+                            <li>
+                                <span>Sirpa Heinimäki</span>
+                                <span class="text-danger">$1000.00</span>
+                            </li>
+                            <li>
+                                <span>Jason Davis</span>
+                                <span class="text-danger">$200.00</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-section" id="why-choose">
+        <div class="container">
+            <h2 class="section-title">Why Choose Us</h2>
+            
+            <ul class="nav nav-tabs justify-content-center" id="whyChooseTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="hedge-funds-tab" data-bs-toggle="tab" data-bs-target="#hedge-funds" type="button" role="tab" aria-controls="hedge-funds" aria-selected="true">Hedge Funds</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="cryptoassets-tab" data-bs-toggle="tab" data-bs-target="#cryptoassets" type="button" role="tab" aria-controls="cryptoassets" aria-selected="false">Cryptoassets</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button" role="tab" aria-controls="portfolio" aria-selected="false">Portfolio</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="whyChooseTabsContent">
+                <div class="tab-pane fade show active" id="hedge-funds" role="tabpanel" aria-labelledby="hedge-funds-tab">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h3 class="mb-4">Strategic Hedge Fund Investments</h3>
+                            <p>Our funds are diversified to include protocols and blockchain companies, ensuring a balanced approach to digital asset investments.</p>
+                            <p>We employ sophisticated risk management strategies and leverage our deep market expertise to maximize returns while minimizing exposure.</p>
+                            <p>Our hedge fund strategies are designed to capitalize on market inefficiencies and emerging opportunities in the rapidly evolving digital asset space.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="tab-image" alt="Hedge Funds">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="cryptoassets" role="tabpanel" aria-labelledby="cryptoassets-tab">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h3 class="mb-4">Strategic Cryptoasset Allocation</h3>
+                            <p>Our funds focus on tokens that incentivize the core actions of a protocol and/or excel in developing novel mechanisms for smart contracts.</p>
+                            <p>We conduct thorough due diligence on each cryptoasset, evaluating technology, team, tokenomics, and market potential before making investment decisions.</p>
+                            <p>Our approach combines fundamental analysis with technical indicators to identify promising projects with long-term growth potential.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="https://images.unsplash.com/photo-1621416894564-9e36687ec3cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="tab-image" alt="Cryptoassets">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h3 class="mb-4">Diversified Portfolio Strategy</h3>
+                            <p>In addition to established cryptoassets, we invest in early token sales that interact with an actual business or product in the blockchain ecosystem.</p>
+                            <p>Our portfolio construction methodology emphasizes diversification across sectors, stages, and risk profiles to optimize risk-adjusted returns.</p>
+                            <p>We continuously monitor and rebalance our portfolios to adapt to changing market conditions and capitalize on emerging opportunities.</p>
+                        </div>
+                        <div class="col-md-6">
+                            <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="tab-image" alt="Portfolio">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Videos Section -->
+    <section class="videos-section">
+        <div class="container">
+            <h2 class="section-title">Featured Videos</h2>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="video-container">
+                        <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Company Introduction" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-description">
+                        <h4>Company Introduction</h4>
+                        <p>Learn about our mission, values, and the services we offer to our clients.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificates Section -->
+    <section class="certificates-section">
+        <div class="container">
+            <h2 class="section-title">Our Certifications</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="certificate-card">
+                        <img src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="certificate-img" alt="Security Certification">
+                        <div class="certificate-body">
+                            <h5 class="certificate-title">ISO 27001 Certification</h5>
+                            <p>Information Security Management System certification demonstrating our commitment to data security.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="certificate-card">
+                        <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="certificate-img" alt="Compliance Certification">
+                        <div class="certificate-body">
+                            <h5 class="certificate-title">Financial Services License</h5>
+                            <p>Fully licensed and regulated by financial authorities in multiple jurisdictions.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="certificate-card">
+                        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" class="certificate-img" alt="Industry Recognition">
+                        <div class="certificate-body">
+                            <h5 class="certificate-title">Industry Excellence Award</h5>
+                            <p>Recognized as a leader in digital asset innovation and financial services.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,233 +1404,29 @@
     <!-- Stats Section -->
     <section class="stats-section">
         <div class="container">
-            <div class="row text-center">
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-number">$2.5B+</div>
-                    <div class="stat-label">Assets Under Management</div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-number">150K+</div>
-                    <div class="stat-label">Active Investors</div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-number">98%</div>
-                    <div class="stat-label">Client Satisfaction</div>
-                </div>
-                <div class="col-md-3 col-6 mb-4">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Customer Support</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section class="features-section" id="features">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">Why Invest With Galaxy Digital Holdings?</h2>
-                    <p class="section-subtitle">We provide institutional-grade investment tools and insights to individual investors.</p>
-                </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <h3 class="feature-title">Advanced Analytics</h3>
-                        <p>Access real-time market data, technical indicators, and predictive analytics to make informed investment decisions.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-shield-alt"></i>
-                        </div>
-                        <h3 class="feature-title">Secure Platform</h3>
-                        <p>Bank-level security with multi-factor authentication, cold storage for digital assets, and insurance protection.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h3 class="feature-title">AI-Powered Tools</h3>
-                        <p>Leverage our proprietary AI algorithms for portfolio optimization, risk assessment, and automated trading.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-globe"></i>
-                        </div>
-                        <h3 class="feature-title">Global Markets</h3>
-                        <p>Trade stocks, ETFs, cryptocurrencies, forex, and commodities from a single integrated platform.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-user-graduate"></i>
-                        </div>
-                        <h3 class="feature-title">Expert Education</h3>
-                        <p>Comprehensive learning resources, webinars, and one-on-one coaching from financial experts.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3 class="feature-title">Mobile Trading</h3>
-                        <p>Full-featured mobile app with real-time alerts, advanced charting, and secure trading on the go.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Trading Tools Section -->
-    <section class="trading-tools">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">Advanced Trading Tools</h2>
-                    <p class="section-subtitle">Powerful tools designed for both novice and professional traders.</p>
-                </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="tool-card">
-                        <div class="tool-icon">
-                            <i class="fas fa-bolt"></i>
-                        </div>
-                        <h3>Lightning Execution</h3>
-                        <p>Execute trades in milliseconds with our high-speed trading infrastructure and direct market access.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="tool-card">
-                        <div class="tool-icon">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <h3>Advanced Charting</h3>
-                        <p>Over 100 technical indicators, drawing tools, and customizable chart types for detailed market analysis.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="tool-card">
-                        <div class="tool-icon">
-                            <i class="fas fa-cogs"></i>
-                        </div>
-                        <h3>Automated Strategies</h3>
-                        <p>Create, backtest, and deploy automated trading strategies without coding knowledge.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Investment Plans Section -->
-    <section class="investment-plans">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">Investment Plans</h2>
-                    <p class="section-subtitle">Choose the plan that fits your investment goals and experience level.</p>
-                </div>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="plan-card plan-basic">
-                        <div class="plan-header">
-                            <h3>Basic</h3>
-                            <div class="plan-price">$500</div>
-                            <p>Minimum Investment</p>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> Access to Stocks & ETFs</li>
-                                <li><i class="fas fa-check"></i> Basic Charting Tools</li>
-                                <li><i class="fas fa-check"></i> Educational Resources</li>
-                                <li><i class="fas fa-check"></i> Email Support</li>
-                                <li><i class="fas fa-times"></i> Advanced Analytics</li>
-                                <li><i class="fas fa-times"></i> Crypto Trading</li>
-                                <li><i class="fas fa-times"></i> AI Portfolio Management</li>
-                            </ul>
-                            <a href="register.html" class="btn btn-outline-secondary w-100 mt-3">Get Started</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="plan-card plan-pro">
-                        <div class="plan-header">
-                            <h3>Professional</h3>
-                            <div class="plan-price">$5,000</div>
-                            <p>Minimum Investment</p>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> All Basic Features</li>
-                                <li><i class="fas fa-check"></i> Advanced Charting Tools</li>
-                                <li><i class="fas fa-check"></i> Crypto & Forex Trading</li>
-                                <li><i class="fas fa-check"></i> Priority Support</li>
-                                <li><i class="fas fa-check"></i> Market Research Reports</li>
-                                <li><i class="fas fa-times"></i> AI Portfolio Management</li>
-                                <li><i class="fas fa-times"></i> Dedicated Account Manager</li>
-                            </ul>
-                            <a href="register.html" class="btn btn-primary-custom w-100 mt-3">Get Started</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="plan-card plan-premium">
-                        <div class="plan-header">
-                            <h3>Premium</h3>
-                            <div class="plan-price">$25,000</div>
-                            <p>Minimum Investment</p>
-                        </div>
-                        <div class="plan-features">
-                            <ul>
-                                <li><i class="fas fa-check"></i> All Professional Features</li>
-                                <li><i class="fas fa-check"></i> AI Portfolio Management</li>
-                                <li><i class="fas fa-check"></i> Dedicated Account Manager</li>
-                                <li><i class="fas fa-check"></i> Alternative Investments</li>
-                                <li><i class="fas fa-check"></i> IPO Access</li>
-                                <li><i class="fas fa-check"></i> 24/7 Phone Support</li>
-                                <li><i class="fas fa-check"></i> Custom Trading Algorithms</li>
-                            </ul>
-                            <a href="register.html" class="btn btn-primary-custom w-100 mt-3">Get Started</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Video Section -->
-    <section class="video-section">
-        <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">Discover Galaxy Digital Holdings</h2>
-                    <p class="section-subtitle">Learn how our platform can help you achieve your financial goals through smart investing and trading.</p>
-                </div>
-            </div>
             <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    <div class="video-container">
-                        <!-- AI Generated Video Placeholder -->
-                        <div style="background: linear-gradient(135deg, #1a237e, #3949ab); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem;">
-                            <div class="text-center">
-                                <i class="fas fa-play-circle mb-3" style="font-size: 4rem;"></i>
-                                <p>AI-Generated Platform Introduction Video</p>
-                                <p class="small">(This would be a professionally produced video explaining our services)</p>
-                            </div>
-                        </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">$5.2B</div>
+                        <div class="stat-text">Assets Under Management</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">250+</div>
+                        <div class="stat-text">Global Employees</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">40+</div>
+                        <div class="stat-text">Countries Served</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">2018</div>
+                        <div class="stat-text">Year Founded</div>
                     </div>
                 </div>
             </div>
@@ -785,51 +1436,40 @@
     <!-- Testimonials Section -->
     <section class="testimonials-section">
         <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">What Our Investors Say</h2>
-                    <p class="section-subtitle">Hear from our community of successful investors.</p>
-                </div>
-            </div>
+            <h2 class="section-title">What Our Clients Say</h2>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-4 mb-4">
                     <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            "Galaxy Digital Holdings transformed my approach to investing. Their AI tools helped me optimize my portfolio and I've seen a 23% return in just 6 months."
-                        </div>
+                        <p class="testimonial-text">"Galaxy Digital has been an invaluable partner in navigating the complex world of digital assets. Their expertise and market insight have significantly enhanced our investment strategy."</p>
                         <div class="testimonial-author">
-                            <div class="testimonial-avatar">JS</div>
-                            <div>
-                                <h5>Jennifer Smith</h5>
-                                <p class="text-muted">Investor since 2020</p>
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" class="author-img" alt="Client">
+                            <div class="author-info">
+                                <h5>Michael Roberts</h5>
+                                <p>CFO, TechGrowth Inc.</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 mb-4">
                     <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            "The educational resources and expert insights provided by Galaxy Digital have been invaluable. I went from novice to confident investor in under a year."
-                        </div>
+                        <p class="testimonial-text">"The team at Galaxy Digital provided exceptional guidance during our token offering. Their comprehensive approach and industry connections were instrumental to our success."</p>
                         <div class="testimonial-author">
-                            <div class="testimonial-avatar">MR</div>
-                            <div>
-                                <h5>Michael Rodriguez</h5>
-                                <p class="text-muted">Active Trader</p>
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" class="author-img" alt="Client">
+                            <div class="author-info">
+                                <h5>Sarah Johnson</h5>
+                                <p>CEO, Blockchain Solutions</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-4 mb-4">
                     <div class="testimonial-card">
-                        <div class="testimonial-text">
-                            "As a professional trader, I appreciate the advanced tools and lightning-fast execution. The platform's reliability sets it apart from competitors."
-                        </div>
+                        <p class="testimonial-text">"As a family office, we needed a trusted partner to help us allocate to digital assets. Galaxy Digital's institutional approach and security measures gave us complete confidence."</p>
                         <div class="testimonial-author">
-                            <div class="testimonial-avatar">SC</div>
-                            <div>
-                                <h5>Sarah Chen</h5>
-                                <p class="text-muted">Professional Trader</p>
+                            <img src="https://randomuser.me/api/portraits/men/67.jpg" class="author-img" alt="Client">
+                            <div class="author-info">
+                                <h5>David Chen</h5>
+                                <p>Managing Partner, Heritage Capital</p>
                             </div>
                         </div>
                     </div>
@@ -838,90 +1478,53 @@
         </div>
     </section>
 
-    <!-- FAQ Section -->
-    <section class="faq-section">
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
         <div class="container">
-            <div class="row text-center mb-5">
-                <div class="col-lg-8 mx-auto">
-                    <h2 class="section-title">Frequently Asked Questions</h2>
-                    <p class="section-subtitle">Find answers to common questions about investing with Galaxy Digital Holdings.</p>
-                </div>
-            </div>
+            <h2 class="section-title">Get In Touch</h2>
             <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingOne">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                                    What is the minimum investment required?
-                                </button>
-                            </h2>
-                            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Galaxy Digital Holdings offers flexible investment options starting from as low as $500 for our basic investment plans. Premium features and advanced trading tools are available with higher minimum deposits.
+                <div class="col-md-8 mx-auto">
+                    <div class="contact-form">
+                        <form>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="First Name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" class="form-control" placeholder="Last Name" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingTwo">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-                                    How secure is my investment and personal information?
-                                </button>
-                            </h2>
-                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    We implement bank-level security measures including 256-bit SSL encryption, two-factor authentication, and segregated client accounts. Digital assets are stored in cold storage with insurance coverage. We are fully compliant with financial regulations and undergo regular security audits.
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control" placeholder="Email Address" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="tel" class="form-control" placeholder="Phone Number">
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingThree">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
-                                    What investment options are available?
-                                </button>
-                            </h2>
-                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Our platform offers diverse investment opportunities including stocks, ETFs, cryptocurrencies, forex, commodities, and managed portfolios. We also provide access to IPO investments and alternative assets for qualified investors.
+                            <div class="row">
+                                <div class="col-12">
+                                    <select class="form-control" required>
+                                        <option value="" disabled selected>Select Service Interest</option>
+                                        <option value="trading">Trading & Market Making</option>
+                                        <option value="asset-management">Asset Management</option>
+                                        <option value="investment-banking">Investment Banking</option>
+                                        <option value="principal-investments">Principal Investments</option>
+                                        <option value="advisory">Advisory Services</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingFour">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
-                                    Do you provide investment advice?
-                                </button>
-                            </h2>
-                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    While we provide extensive market research, analytics, and educational resources, we do not offer personalized financial advice. For specific investment guidance, we recommend consulting with a qualified financial advisor. Our tools are designed to help you make informed decisions based on your investment goals and risk tolerance.
+                            <div class="row">
+                                <div class="col-12">
+                                    <textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingFive">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive">
-                                    How can I withdraw my funds?
-                                </button>
-                            </h2>
-                            <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Withdrawals can be processed through our secure platform to your linked bank account. Standard processing time is 1-3 business days. There are no withdrawal fees for standard transactions, though premium withdrawal options are available for expedited processing.
+                            <div class="row mt-3">
+                                <div class="col-12 text-center">
+                                    <button type="submit" class="btn btn-primary-custom">Submit Inquiry</button>
                                 </div>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="headingSix">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix">
-                                    What trading tools are available on your platform?
-                                </button>
-                            </h2>
-                            <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Our platform offers a comprehensive suite of trading tools including advanced charting with over 100 technical indicators, algorithmic trading capabilities, real-time market data, portfolio analytics, risk management tools, and customizable trading interfaces. Professional plans also include backtesting functionality and API access for automated trading strategies.
-                                </div>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -932,115 +1535,97 @@
     <footer class="footer">
         <div class="container">
             <div class="row">
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <h5>Galaxy Digital Holdings</h5>
-                    <p>Premium investment and trading platform providing institutional-grade tools to individual investors since 2015. Regulated and trusted by over 150,000 investors worldwide.</p>
-                    <div class="social-icons mt-4">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="footer-title">Galaxy Digital Holdings</h5>
+                    <p>Global leader in digital asset financial services, providing institutions and direct clients with innovative solutions across the digital assets ecosystem.</p>
+                    <div class="social-links">
                         <a href="#"><i class="fab fa-twitter"></i></a>
                         <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
                         <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-youtube"></i></a>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Quick Links</h5>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h5 class="footer-title">Quick Links</h5>
                     <ul class="footer-links">
-                        <li><a href="index.html">Home</a></li>
-                        <li><a href="investments.html">Investments</a></li>
-                        <li><a href="trading.html">Trading</a></li>
-                        <li><a href="education.html">Education</a></li>
-                        <li><a href="about.html">About Us</a></li>
-                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#referral">Referral Program</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
-                    <h5>Investment Products</h5>
+                    <h5 class="footer-title">Services</h5>
                     <ul class="footer-links">
-                        <li><a href="#">Stocks & ETFs</a></li>
-                        <li><a href="#">Cryptocurrencies</a></li>
-                        <li><a href="#">Forex Trading</a></li>
-                        <li><a href="#">Commodities</a></li>
-                        <li><a href="#">Managed Portfolios</a></li>
-                        <li><a href="#">Alternative Investments</a></li>
+                        <li><a href="#services">Trading</a></li>
+                        <li><a href="#services">Asset Management</a></li>
+                        <li><a href="#services">Investment Banking</a></li>
+                        <li><a href="#services">Principal Investments</a></li>
+                        <li><a href="#services">Advisory Services</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-3 col-md-6 mb-4">
-                    <h5>Contact Us</h5>
+                    <h5 class="footer-title">Contact Us</h5>
                     <ul class="footer-links">
-                        <li><i class="fas fa-map-marker-alt me-2"></i> 456 Investment Ave, Financial District</li>
-                        <li><i class="fas fa-phone me-2"></i> +1 (800) 123-4567</li>
-                        <li><i class="fas fa-envelope me-2"></i> support@galaxydigital.com</li>
-                        <li><i class="fas fa-clock me-2"></i> 24/7 Customer Support</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i> 123 Financial District, New York, NY 10005</li>
+                        <li><i class="fas fa-phone-alt me-2"></i> +1 (800) 123-4567</li>
+                        <li><i class="fas fa-envelope me-2"></i> info@galaxydigital.com</li>
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                <p>&copy; 2023 Galaxy Digital Holdings. All Rights Reserved. | <a href="#" class="text-white-50">Privacy Policy</a> | <a href="#" class="text-white-50">Terms of Service</a></p>
-                <p class="small">Investing involves risk, including the possible loss of principal. Past performance does not guarantee future results.</p>
+                <p>&copy; 2023 Galaxy Digital Holdings Ltd. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // Load cryptocurrency prices
-        async function loadCryptoPrices() {
-            try {
-                // Using CoinGecko API to get cryptocurrency prices
-                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,ripple,litecoin,cardano,polkadot,binancecoin,dogecoin,solana,tron&vs_currencies=usd&include_24hr_change=true');
-                const data = await response.json();
-                
-                cryptoPrices = data;
-                updateCryptoMarquee();
-            } catch (error) {
-                console.error('Error loading crypto prices:', error);
-                // Fallback to static data if API fails
-                cryptoPrices = {
-                    bitcoin: { usd: 45000, usd_24h_change: 2.5 },
-                    ethereum: { usd: 3000, usd_24h_change: 1.8 },
-                    ripple: { usd: 0.75, usd_24h_change: -0.5 },
-                    litecoin: { usd: 150, usd_24h_change: 0.3 },
-                    cardano: { usd: 1.2, usd_24h_change: 1.2 },
-                    polkadot: { usd: 25, usd_24h_change: -1.5 },
-                    binancecoin: { usd: 400, usd_24h_change: 3.2 },
-                    dogecoin: { usd: 0.15, usd_24h_change: 5.7 },
-                    solana: { usd: 100, usd_24h_change: 4.1 },
-                    tron: { usd: 0.08, usd_24h_change: -0.2 }
-                };
-                updateCryptoMarquee();
-            }
-        }
-
-        // Update crypto marquee with current prices
-        function updateCryptoMarquee() {
-            const marqueeContent = document.getElementById('marqueeContent');
-            let html = '';
-            
-            for (const [coin, data] of Object.entries(cryptoPrices)) {
-                const symbol = coin.toUpperCase();
-                const price = data.usd.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-                const change = data.usd_24h_change;
-                const changeClass = change >= 0 ? 'up' : 'down';
-                const changeSymbol = change >= 0 ? '▲' : '▼';
-                
-                html += `<span class="crypto-item">
-                    <span class="crypto-symbol">${symbol}:</span>
-                    <span class="crypto-price ${changeClass}">${price} ${changeSymbol} ${Math.abs(change).toFixed(2)}%</span>
-                </span>`;
-            }
-            
-            marqueeContent.innerHTML = html;
-        }
-
-        // Initialize the page
+        // Language selector functionality
+        document.querySelector('.language-dropdown').addEventListener('change', function() {
+            alert('Language changed to: ' + this.options[this.selectedIndex].text);
+        });
+        
+        // Marquee functionality
         document.addEventListener('DOMContentLoaded', function() {
-            loadCryptoPrices();
+            const marqueeContent = document.querySelector('.marquee-content');
+            const marqueeItems = document.querySelectorAll('.marquee-item');
             
-            // Update prices every 60 seconds
-            setInterval(loadCryptoPrices, 60000);
+            // Duplicate content for seamless loop
+            marqueeItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                marqueeContent.appendChild(clone);
+            });
+            
+            // Copy referral link functionality
+            const copyButton = document.querySelector('.btn-primary-custom[type="button"]');
+            if (copyButton) {
+                copyButton.addEventListener('click', function() {
+                    const referralInput = document.querySelector('.input-group input');
+                    referralInput.select();
+                    document.execCommand('copy');
+                    alert('Referral link copied to clipboard!');
+                });
+            }
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    if (this.getAttribute('href') === '#') return;
+                    
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
         });
     </script>
 </body>
