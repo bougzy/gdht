@@ -21,12 +21,17 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Enhanced CORS configuration
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:3000",
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Admin-Username', 'Admin-Password']
-}));
+// app.use(cors({
+//   origin: [
+//     "http://localhost:3000",
+//     "http://localhost:4000",
+//     "https://gdht.onrender.com"
+//   ],
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization', 'Admin-Username', 'Admin-Password']
+// }));
+
 
 app.use(requestIp.mw());
 const server = http.createServer(app);
