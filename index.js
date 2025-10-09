@@ -7,7 +7,6 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const path = require("path");
-const cors = require("cors");
 const WebSocket = require('ws');
 const http = require('http');
 const multer = require('multer');
@@ -20,17 +19,7 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Enhanced CORS configuration
-// app.use(cors({
-//   origin: [
-//     "http://localhost:3000",
-//     "http://localhost:4000",
-//     "https://gdht.onrender.com"
-//   ],
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization', 'Admin-Username', 'Admin-Password']
-// }));
+
 
 
 app.use(requestIp.mw());
@@ -1095,6 +1084,385 @@ app.get("/api/admin/users", adminAuth, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== ENHANCED INVESTMENT APPROVAL ROUTES ==================
+
+// Get pending investments for admin
+app.get("/api/admin/pending-investments", adminAuth, async (req, res) => {
+  try {
+    const pendingInvestments = await Transaction.find({ 
+      type: "investment", 
+      status: "pending" 
+    })
+    .populate('user', 'username email location ipAddress createdAt')
+    .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      message: "Pending investments retrieved successfully",
+      data: {
+        investments: pendingInvestments,
+        count: pendingInvestments.length
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Approve investment
+app.put("/api/admin/investment/:transactionId/approve", adminAuth, async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const { adminNote } = req.body;
+    
+    const transaction = await Transaction.findById(transactionId).populate('user');
+    if (!transaction || transaction.type !== "investment") {
+      return res.status(404).json({ 
+        success: false,
+        message: "Investment transaction not found" 
+      });
+    }
+    
+    if (transaction.status === "approved") {
+      return res.status(400).json({ 
+        success: false,
+        message: "Investment already approved" 
+      });
+    }
+
+    const user = await User.findById(transaction.user._id);
+    
+    if (user.depositBalance < transaction.amount) {
+      return res.status(400).json({ 
+        success: false,
+        message: "User has insufficient deposit balance for this investment" 
+      });
+    }
+
+    // Deduct from deposit balance and add to total invested
+    user.depositBalance -= transaction.amount;
+    user.totalInvested += transaction.amount;
+    await user.save();
+
+    // Create investment record
+    const plans = [
+      { id: "1", name: "Basic Plan", profitRate: 5 },
+      { id: "2", name: "Premium Plan", profitRate: 8 },
+      { id: "3", name: "VIP Plan", profitRate: 12 }
+    ];
+    
+    const plan = plans.find(p => p.id === transaction.investmentPlan) || 
+                plans.find(p => p.name === transaction.investmentPlan) ||
+                plans[0];
+
+    const investment = await Investment.create({
+      user: user._id,
+      transaction: transaction._id,
+      planName: plan.name,
+      amount: transaction.amount,
+      profitRate: plan.profitRate,
+      expectedProfit: transaction.amount * (plan.profitRate / 100),
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      status: "active"
+    });
+
+    transaction.status = "approved";
+    transaction.processed = true;
+    if (adminNote) transaction.adminNote = adminNote;
+    await transaction.save();
+
+    // Send notification to user
+    await sendNotification(
+      transaction.user._id,
+      "Investment Approved ✅",
+      `Your investment of $${transaction.amount} in ${plan.name} has been approved and activated. Expected profit: $${investment.expectedProfit.toFixed(2)}.`,
+      "investment",
+      transaction._id,
+      "transaction"
+    );
+
+    // Real-time update via WebSocket
+    sendUserUpdate(transaction.user._id.toString(), {
+      type: 'INVESTMENT_APPROVED',
+      walletBalance: user.walletBalance,
+      depositBalance: user.depositBalance,
+      totalInvested: user.totalInvested,
+      transaction: transaction,
+      investment: investment,
+      amount: transaction.amount,
+      message: `Your investment of $${transaction.amount} has been approved`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true,
+      message: "Investment approved successfully", 
+      data: { 
+        transaction: transaction,
+        investment: investment,
+        userBalance: {
+          walletBalance: user.walletBalance,
+          depositBalance: user.depositBalance,
+          totalInvested: user.totalInvested
+        }
+      }
+    });
+  } catch (error) { 
+    console.error('Investment approval error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Investment approval failed" 
+    }); 
+  }
+});
+
+// Reject investment
+app.put("/api/admin/investment/:transactionId/reject", adminAuth, async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+    const { adminNote } = req.body;
+    
+    const transaction = await Transaction.findById(transactionId).populate('user');
+    if (!transaction || transaction.type !== "investment") {
+      return res.status(404).json({ 
+        success: false,
+        message: "Investment transaction not found" 
+      });
+    }
+    
+    transaction.status = "rejected";
+    transaction.processed = true;
+    if (adminNote) transaction.adminNote = adminNote;
+    await transaction.save();
+
+    // Send notification to user
+    await sendNotification(
+      transaction.user._id,
+      "Investment Rejected ❌",
+      `Your investment request of $${transaction.amount} has been rejected. ${adminNote ? `Reason: ${adminNote}` : ''}`,
+      "investment",
+      transaction._id,
+      "transaction"
+    );
+
+    // Real-time update via WebSocket
+    sendUserUpdate(transaction.user._id.toString(), {
+      type: 'INVESTMENT_REJECTED',
+      transaction: transaction,
+      amount: transaction.amount,
+      message: `Your investment request of $${transaction.amount} has been rejected`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true,
+      message: "Investment rejected successfully", 
+      data: { transaction }
+    });
+  } catch (error) { 
+    console.error('Investment rejection error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Investment rejection failed" 
+    }); 
+  }
+});
+
+// ================== MANUAL TOP-UP ROUTES ==================
+
+// Manual deposit top-up
+app.post("/api/admin/user/:userId/topup-deposit", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount, note } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Valid amount is required" 
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+
+    const oldDepositBalance = user.depositBalance;
+    user.depositBalance += parseFloat(amount);
+    await user.save();
+
+    // Create transaction record
+    const transaction = await Transaction.create({
+      user: user._id,
+      type: "admin_adjustment",
+      amount: parseFloat(amount),
+      status: "approved",
+      adminNote: `Admin manual deposit top-up: $${amount}. ${note || ''}`,
+      processed: true
+    });
+
+    // Send notification to user
+    await sendNotification(
+      user._id,
+      "Deposit Top-Up Added ✅",
+      `Admin has added $${amount} to your deposit balance. ${note || ''}`,
+      "deposit",
+      transaction._id,
+      "transaction"
+    );
+
+    // Real-time update via WebSocket
+    sendUserUpdate(user._id.toString(), {
+      type: 'DEPOSIT_TOPUP',
+      walletBalance: user.walletBalance,
+      depositBalance: user.depositBalance,
+      amount: amount,
+      transaction: transaction,
+      message: `$${amount} has been added to your deposit balance`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true,
+      message: "Deposit top-up successful", 
+      data: {
+        user: {
+          depositBalance: user.depositBalance,
+          previousBalance: oldDepositBalance
+        },
+        transaction: transaction
+      }
+    });
+  } catch (error) {
+    console.error('Deposit top-up error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Deposit top-up failed" 
+    });
+  }
+});
+
+// Manual investment top-up
+app.post("/api/admin/user/:userId/topup-investment", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount, planId, note } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Valid amount is required" 
+      });
+    }
+
+    if (!planId) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Investment plan is required" 
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+
+    const plans = [
+      { id: "1", name: "Basic Plan", profitRate: 5 },
+      { id: "2", name: "Premium Plan", profitRate: 8 },
+      { id: "3", name: "VIP Plan", profitRate: 12 }
+    ];
+    
+    const plan = plans.find(p => p.id === planId);
+    if (!plan) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid investment plan" 
+      });
+    }
+
+    // Create investment directly without deducting from deposit balance
+    const investment = await Investment.create({
+      user: user._id,
+      planName: plan.name,
+      amount: parseFloat(amount),
+      profitRate: plan.profitRate,
+      expectedProfit: parseFloat(amount) * (plan.profitRate / 100),
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      status: "active"
+    });
+
+    // Update user's total invested
+    user.totalInvested += parseFloat(amount);
+    await user.save();
+
+    // Create transaction record
+    const transaction = await Transaction.create({
+      user: user._id,
+      type: "investment",
+      amount: parseFloat(amount),
+      status: "approved",
+      investmentPlan: plan.name,
+      adminNote: `Admin manual investment top-up: $${amount} in ${plan.name}. ${note || ''}`,
+      processed: true
+    });
+
+    // Link transaction to investment
+    investment.transaction = transaction._id;
+    await investment.save();
+
+    // Send notification to user
+    await sendNotification(
+      user._id,
+      "Investment Top-Up Added ✅",
+      `Admin has added a new investment of $${amount} in ${plan.name} to your account. ${note || ''}`,
+      "investment",
+      transaction._id,
+      "transaction"
+    );
+
+    // Real-time update via WebSocket
+    sendUserUpdate(user._id.toString(), {
+      type: 'INVESTMENT_TOPUP',
+      walletBalance: user.walletBalance,
+      depositBalance: user.depositBalance,
+      totalInvested: user.totalInvested,
+      amount: amount,
+      investment: investment,
+      transaction: transaction,
+      message: `New investment of $${amount} in ${plan.name} has been added to your account`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true,
+      message: "Investment top-up successful", 
+      data: {
+        user: {
+          totalInvested: user.totalInvested
+        },
+        investment: investment,
+        transaction: transaction
+      }
+    });
+  } catch (error) {
+    console.error('Investment top-up error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Investment top-up failed" 
+    });
   }
 });
 

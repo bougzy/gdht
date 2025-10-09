@@ -1233,6 +1233,52 @@
         </div>
     </div>
 
+    <!-- Top-Up Modal -->
+<div class="modal fade" id="topupModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Manual Top-Up</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">User</label>
+          <div class="form-control" id="topupUsername" readonly></div>
+          <input type="hidden" id="topupUserId">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Top-Up Type</label>
+          <select class="form-select" id="topupType" onchange="toggleTopUpType()">
+            <option value="deposit">Deposit Top-Up</option>
+            <option value="investment">Investment Top-Up</option>
+          </select>
+        </div>
+        <div class="mb-3" id="investmentPlanGroup">
+          <label class="form-label">Investment Plan</label>
+          <select class="form-select" id="topupPlan">
+            <option value="1">Basic Plan (5% profit)</option>
+            <option value="2">Premium Plan (8% profit)</option>
+            <option value="3">VIP Plan (12% profit)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount</label>
+          <input type="number" class="form-control" id="topupAmount" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Note (Optional)</label>
+          <textarea class="form-control" id="topupNote" rows="2" placeholder="Add a note for this top-up..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-admin" onclick="submitTopUp()">Process Top-Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
@@ -2428,6 +2474,318 @@
             showToast('User Added', 'New user has been created successfully', 'success');
             bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
         }
+
+
+
+        // Enhanced investment management functions
+async function loadPendingInvestments() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/pending-investments`);
+    const result = await response.json();
+    
+    if (result.success) {
+      displayPendingInvestments(result.data.investments);
+    }
+  } catch (error) {
+    console.error('Error loading pending investments:', error);
+  }
+}
+
+function displayPendingInvestments(investments) {
+  const tbody = document.getElementById('investmentsTableBody');
+  tbody.innerHTML = '';
+  
+  if (!investments || investments.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-4">
+          <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+          <p class="text-muted">No pending investments found</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  investments.forEach(investment => {
+    const row = `
+      <tr>
+        <td>
+          <div class="fw-bold">${investment.user?.username || 'N/A'}</div>
+          <small class="text-muted">${investment.user?.email || ''}</small>
+        </td>
+        <td>${investment.investmentPlan || 'N/A'}</td>
+        <td class="fw-bold">$${investment.amount.toFixed(2)}</td>
+        <td>${getProfitRateForPlan(investment.investmentPlan)}%</td>
+        <td>$0.00</td>
+        <td><span class="badge badge-pending">Pending</span></td>
+        <td>${new Date(investment.createdAt).toLocaleDateString()}</td>
+        <td>N/A</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-success" onclick="approveInvestment('${investment._id}')">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="rejectInvestment('${investment._id}')">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+}
+
+function getProfitRateForPlan(planName) {
+  const plans = {
+    'Basic Plan': 5,
+    'Premium Plan': 8,
+    'VIP Plan': 12
+  };
+  return plans[planName] || 0;
+}
+
+async function approveInvestment(transactionId) {
+  if (!confirm('Are you sure you want to approve this investment?')) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/investment/${transactionId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminNote: 'Investment approved by admin'
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Investment Approved', `Investment of $${result.data.transaction.amount} has been approved`, 'success');
+      loadPendingInvestments();
+      refreshDashboard();
+    } else {
+      showToast('Approval Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Error approving investment:', error);
+    showToast('Error', 'Failed to approve investment', 'error');
+  }
+}
+
+async function rejectInvestment(transactionId) {
+  const reason = prompt('Please enter reason for rejection:');
+  if (reason === null) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/investment/${transactionId}/reject`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminNote: reason
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Investment Rejected', 'Investment request has been rejected', 'warning');
+      loadPendingInvestments();
+    } else {
+      showToast('Rejection Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Error rejecting investment:', error);
+    showToast('Error', 'Failed to reject investment', 'error');
+  }
+}
+
+// Manual top-up functions
+function openDepositTopUpModal(userId, username) {
+  document.getElementById('topupUserId').value = userId;
+  document.getElementById('topupUsername').textContent = username;
+  document.getElementById('topupType').value = 'deposit';
+  document.getElementById('investmentPlanGroup').classList.add('d-none');
+  
+  const modal = new bootstrap.Modal(document.getElementById('topupModal'));
+  modal.show();
+}
+
+function openInvestmentTopUpModal(userId, username) {
+  document.getElementById('topupUserId').value = userId;
+  document.getElementById('topupUsername').textContent = username;
+  document.getElementById('topupType').value = 'investment';
+  document.getElementById('investmentPlanGroup').classList.remove('d-none');
+  
+  const modal = new bootstrap.Modal(document.getElementById('topupModal'));
+  modal.show();
+}
+
+async function submitTopUp() {
+  const userId = document.getElementById('topupUserId').value;
+  const amount = document.getElementById('topupAmount').value;
+  const note = document.getElementById('topupNote').value;
+  const type = document.getElementById('topupType').value;
+  const planId = document.getElementById('topupPlan').value;
+  
+  if (!amount || amount <= 0) {
+    showToast('Validation Error', 'Please enter a valid amount', 'error');
+    return;
+  }
+  
+  if (type === 'investment' && !planId) {
+    showToast('Validation Error', 'Please select an investment plan', 'error');
+    return;
+  }
+  
+  try {
+    const endpoint = type === 'deposit' ? 'topup-deposit' : 'topup-investment';
+    const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: parseFloat(amount),
+        planId: planId,
+        note: note
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Top-Up Successful', result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('topupModal')).hide();
+      document.getElementById('topupForm').reset();
+      
+      // Refresh user data and relevant sections
+      refreshDashboard();
+      if (currentTab === 'users') loadUsers();
+      if (currentTab === 'investments') loadPendingInvestments();
+    } else {
+      showToast('Top-Up Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Top-up error:', error);
+    showToast('Error', 'Failed to process top-up', 'error');
+  }
+}
+
+// Update user table to include top-up buttons
+function displayUsers(users) {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <i class="fas fa-users fa-2x text-muted mb-2"></i>
+          <p class="text-muted">No users found</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  users.forEach(user => {
+    const avatarText = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+    const statusBadge = user.isBlocked ? 
+      '<span class="badge bg-danger">Blocked</span>' : 
+      '<span class="badge bg-success">Active</span>';
+    
+    const row = `
+      <tr>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">${avatarText}</div>
+            <div>
+              <div class="fw-bold">${user.username}</div>
+              <small class="text-muted">${user.name || 'N/A'}</small>
+            </div>
+          </div>
+        </td>
+        <td>${user.email}</td>
+        <td>
+          <small>${user.location?.country || 'Unknown'}</small>
+        </td>
+        <td>
+          <div>$${user.walletBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Wallet</small>
+        </td>
+        <td>
+          <div>$${user.depositBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Deposit</small>
+        </td>
+        <td>
+          <div>$${user.totalInvested?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Invested</small>
+        </td>
+        <td>${statusBadge}</td>
+        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-primary" onclick="viewUser('${user._id}')" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-warning" onclick="editUser('${user._id}')" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Top-Up">
+                <i class="fas fa-plus"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="openDepositTopUpModal('${user._id}', '${user.username}')">Top-Up Deposit</a></li>
+                <li><a class="dropdown-item" href="#" onclick="openInvestmentTopUpModal('${user._id}', '${user.username}')">Top-Up Investment</a></li>
+              </ul>
+            </div>
+            ${user.isBlocked ? 
+              `<button class="btn btn-sm btn-outline-success" onclick="toggleUserBlock('${user._id}', false)" title="Unblock">
+                <i class="fas fa-check"></i>
+              </button>` :
+              `<button class="btn btn-sm btn-outline-danger" onclick="toggleUserBlock('${user._id}', true)" title="Block">
+                <i class="fas fa-ban"></i>
+              </button>`
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+  
+  document.getElementById('usersTableInfo').textContent = `Showing ${users.length} users`;
+}
+
+
+function toggleTopUpType() {
+  const type = document.getElementById('topupType').value;
+  const planGroup = document.getElementById('investmentPlanGroup');
+  
+  if (type === 'investment') {
+    planGroup.classList.remove('d-none');
+  } else {
+    planGroup.classList.add('d-none');
+  }
+}
+
+// Update the switchTab function to load investments when investments tab is clicked
+function switchTab(tabName) {
+  // ... existing code ...
+  
+  if (tabName === 'investments') {
+    loadPendingInvestments();
+  }
+  
+  // ... existing code ...
+}
+
     </script>
 </body>
 </html>

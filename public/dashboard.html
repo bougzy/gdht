@@ -1998,6 +1998,82 @@
             `;
             navbar.appendChild(refreshItem);
         });
+
+        // Enhanced WebSocket message handler for investments
+function handleWebSocketMessage(data) {
+  switch (data.type) {
+    // ... existing cases ...
+    
+    case 'INVESTMENT_APPROVED':
+      updateUserBalances(data);
+      loadActiveInvestments();
+      loadTransactions();
+      updateLastUpdateTime();
+      showToast('Investment Approved', `Your investment of $${data.amount} has been approved and activated`, 'success');
+      break;
+      
+    case 'INVESTMENT_REJECTED':
+      loadTransactions();
+      updateLastUpdateTime();
+      showToast('Investment Rejected', data.message || 'Your investment request was rejected', 'error');
+      break;
+      
+    case 'INVESTMENT_TOPUP':
+      updateUserBalances(data);
+      loadActiveInvestments();
+      loadTransactions();
+      updateLastUpdateTime();
+      showToast('Investment Added', `Admin added a new investment of $${data.amount} to your account`, 'success');
+      break;
+      
+    case 'DEPOSIT_TOPUP':
+      updateUserBalances(data);
+      loadTransactions();
+      updateLastUpdateTime();
+      showToast('Deposit Top-Up', `Admin added $${data.amount} to your deposit balance`, 'success');
+      break;
+  }
+}
+
+// Enhanced function to display approved investments in user dashboard
+function displayActiveInvestments(investments) {
+  const container = document.getElementById('activeInvestments');
+  
+  if (!investments || investments.length === 0) {
+    container.innerHTML = '<p class="text-muted">No active investments</p>';
+    return;
+  }
+  
+  let html = '';
+  investments.forEach(investment => {
+    const startDate = new Date(investment.startDate).toLocaleDateString();
+    const endDate = investment.endDate ? new Date(investment.endDate).toLocaleDateString() : 'N/A';
+    const profitEarned = investment.totalProfitEarned || 0;
+    const statusClass = investment.status === 'active' ? 'status-approved' : 
+                      investment.status === 'completed' ? 'status-pending' : 'status-rejected';
+    
+    html += `
+      <div class="transaction-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">${investment.planName}</h6>
+            <small class="text-muted">Started: ${startDate} • Ends: ${endDate}</small>
+            <br>
+            <small class="text-info">Profit Rate: ${investment.profitRate}% • Expected: $${investment.expectedProfit?.toFixed(2) || '0.00'}</small>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold">$${investment.amount.toFixed(2)}</div>
+            <small class="text-success">+$${profitEarned.toFixed(2)} earned</small>
+            <div><span class="transaction-status ${statusClass}">${investment.status}</span></div>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
     </script>
 </body>
 </html>
