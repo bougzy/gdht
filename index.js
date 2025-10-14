@@ -1841,6 +1841,250 @@ app.put("/api/admin/earnings-breakdown/:breakdownId/finalize", adminAuth, async 
   }
 });
 
+
+// ================== EARNINGS BREAKDOWN ROUTES ==================
+
+// Get all earnings breakdowns
+app.get("/api/admin/earnings-breakdowns", adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, userId } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const filter = {};
+    if (userId && userId !== 'all') filter.user = userId;
+    
+    const breakdowns = await EarningsBreakdown.find(filter)
+      .populate('user', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await EarningsBreakdown.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: {
+        breakdowns,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== TRANSACTION REPORT ROUTES ==================
+
+// Get all transaction reports
+app.get("/api/admin/transaction-reports", adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, userId } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const filter = {};
+    if (userId && userId !== 'all') filter.user = userId;
+    
+    const reports = await TransactionReport.find(filter)
+      .populate('user', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await TransactionReport.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: {
+        reports,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== INVESTMENT MANAGEMENT ROUTES ==================
+
+// Get all investments with filters
+app.get("/api/admin/investments", adminAuth, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 50 } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const filter = {};
+    if (status && status !== 'all') filter.status = status;
+    
+    const investments = await Investment.find(filter)
+      .populate('user', 'username email')
+      .populate('transaction')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await Investment.countDocuments(filter);
+    
+    // Calculate stats
+    const activeInvestments = await Investment.countDocuments({ status: 'active' });
+    const totalInvested = await Investment.aggregate([
+      { $match: { status: 'active' } },
+      { $group: { _id: null, total: { $sum: '$amount' } } }
+    ]);
+    
+    res.json({
+      success: true,
+      data: {
+        investments,
+        stats: {
+          active: activeInvestments,
+          totalInvested: totalInvested[0]?.total || 0,
+          total: total
+        },
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== NOTIFICATION MANAGEMENT ROUTES ==================
+
+// Get all notifications
+app.get("/api/admin/notifications", adminAuth, async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const notifications = await Notification.find({})
+      .populate('user', 'username email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await Notification.countDocuments();
+    const unread = await Notification.countDocuments({ isRead: false });
+    const today = await Notification.countDocuments({
+      createdAt: { $gte: new Date().setHours(0,0,0,0) }
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        notifications,
+        stats: {
+          total,
+          unread,
+          today
+        },
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== SYSTEM SETTINGS ROUTES ==================
+
+// Get system settings
+app.get("/api/admin/system-settings", adminAuth, async (req, res) => {
+  try {
+    // Mock system info - in production, this would come from your database
+    const systemInfo = {
+      version: "2.1.0",
+      lastBackup: new Date().toISOString(),
+      dbSize: "45.2 MB",
+      uptime: process.uptime()
+    };
+    
+    // Mock investment plans - in production, these would come from your database
+    const plans = [
+      {
+        _id: "1",
+        name: "Basic Plan",
+        minAmount: 50,
+        maxAmount: 1000,
+        profitRate: 5,
+        duration: 30
+      },
+      {
+        _id: "2",
+        name: "Premium Plan", 
+        minAmount: 1001,
+        maxAmount: 5000,
+        profitRate: 8,
+        duration: 30
+      },
+      {
+        _id: "3",
+        name: "VIP Plan",
+        minAmount: 5001,
+        maxAmount: 20000,
+        profitRate: 12,
+        duration: 30
+      }
+    ];
+    
+    res.json({
+      success: true,
+      data: {
+        settings: {
+          siteName: "Galaxy Digital Holdings",
+          adminEmail: "admin@galaxydigital.com",
+          currency: "USD",
+          sessionTimeout: 60,
+          maxLoginAttempts: 5,
+          enable2FA: false,
+          maintenanceMode: false
+        },
+        plans,
+        systemInfo
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Update system settings
+app.put("/api/admin/system-settings", adminAuth, async (req, res) => {
+  try {
+    const settings = req.body;
+    
+    // In production, save to database
+    console.log('System settings updated:', settings);
+    
+    res.json({
+      success: true,
+      message: "System settings updated successfully",
+      data: { settings }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // ================== CUSTOM TRANSACTION REPORT MANAGEMENT ==================
 
 // Create custom transaction report

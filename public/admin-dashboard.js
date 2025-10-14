@@ -1059,6 +1059,79 @@ async function submitInvestmentAdjustment() {
 }
 
 // Earnings breakdown functions
+// async function loadEarningsBreakdowns() {
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/admin/earnings-breakdowns`);
+//         const result = await response.json();
+        
+//         if (result.success) {
+//             displayEarningsBreakdowns(result.data.breakdowns || []);
+//         } else {
+//             showToast('Error', result.message, 'error');
+//         }
+//     } catch (error) {
+//         console.error('Error loading earnings breakdowns:', error);
+//         showToast('Error', 'Failed to load earnings breakdowns', 'error');
+//     }
+// }
+
+// function displayEarningsBreakdowns(breakdowns) {
+//     const tbody = document.getElementById('earningsTableBody');
+//     if (!tbody) return;
+    
+//     tbody.innerHTML = '';
+    
+//     if (!breakdowns || breakdowns.length === 0) {
+//         tbody.innerHTML = `
+//             <tr>
+//                 <td colspan="10" class="text-center py-4">
+//                     <i class="fas fa-chart-pie fa-2x text-muted mb-2"></i>
+//                     <p class="text-muted">No earnings breakdowns found</p>
+//                 </td>
+//             </tr>
+//         `;
+//         return;
+//     }
+    
+//     breakdowns.forEach(breakdown => {
+//         const total = (breakdown.profit || 0) + (breakdown.deposit || 0) + (breakdown.investment || 0);
+//         const statusBadge = breakdown.status === 'active' ? 
+//             '<span class="badge bg-success">Active</span>' : 
+//             '<span class="badge bg-secondary">Inactive</span>';
+        
+//         const row = `
+//             <tr>
+//                 <td>
+//                     <div class="fw-bold">${escapeHtml(breakdown.user?.username || 'N/A')}</div>
+//                     <small class="text-muted">${escapeHtml(breakdown.user?.email || '')}</small>
+//                 </td>
+//                 <td>${escapeHtml(breakdown.period)}</td>
+//                 <td>${new Date(breakdown.startDate).toLocaleDateString()} - ${new Date(breakdown.endDate).toLocaleDateString()}</td>
+//                 <td>$${(breakdown.profit || 0).toFixed(2)}</td>
+//                 <td>$${(breakdown.deposit || 0).toFixed(2)}</td>
+//                 <td>$${(breakdown.investment || 0).toFixed(2)}</td>
+//                 <td class="fw-bold">$${total.toFixed(2)}</td>
+//                 <td>${statusBadge}</td>
+//                 <td>${new Date(breakdown.createdAt).toLocaleDateString()}</td>
+//                 <td>
+//                     <div class="action-buttons">
+//                         <button class="btn btn-sm btn-outline-primary" onclick="viewEarningsBreakdown('${breakdown._id}')">
+//                             <i class="fas fa-eye"></i>
+//                         </button>
+//                         <button class="btn btn-sm btn-outline-danger" onclick="deleteEarningsBreakdown('${breakdown._id}')">
+//                             <i class="fas fa-trash"></i>
+//                         </button>
+//                     </div>
+//                 </td>
+//             </tr>
+//         `;
+//         tbody.innerHTML += row;
+//     });
+// }
+
+
+// ================== EARNINGS BREAKDOWN MANAGEMENT ==================
+
 async function loadEarningsBreakdowns() {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/earnings-breakdowns`);
@@ -1095,9 +1168,9 @@ function displayEarningsBreakdowns(breakdowns) {
     
     breakdowns.forEach(breakdown => {
         const total = (breakdown.profit || 0) + (breakdown.deposit || 0) + (breakdown.investment || 0);
-        const statusBadge = breakdown.status === 'active' ? 
-            '<span class="badge bg-success">Active</span>' : 
-            '<span class="badge bg-secondary">Inactive</span>';
+        const statusBadge = breakdown.isFinalized ? 
+            '<span class="badge bg-success">Finalized</span>' : 
+            '<span class="badge bg-warning">Draft</span>';
         
         const row = `
             <tr>
@@ -1118,6 +1191,11 @@ function displayEarningsBreakdowns(breakdowns) {
                         <button class="btn btn-sm btn-outline-primary" onclick="viewEarningsBreakdown('${breakdown._id}')">
                             <i class="fas fa-eye"></i>
                         </button>
+                        ${!breakdown.isFinalized ? 
+                            `<button class="btn btn-sm btn-outline-success" onclick="finalizeEarningsBreakdown('${breakdown._id}')">
+                                <i class="fas fa-check"></i>
+                            </button>` : ''
+                        }
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteEarningsBreakdown('${breakdown._id}')">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -1129,12 +1207,721 @@ function displayEarningsBreakdowns(breakdowns) {
     });
 }
 
-function calculateEarningsTotal() {
-    const profit = parseFloat(document.getElementById('earningsProfit').value) || 0;
-    const deposit = parseFloat(document.getElementById('earningsDeposit').value) || 0;
-    const investment = parseFloat(document.getElementById('earningsInvestment').value) || 0;
-    const total = profit + deposit + investment;
-    document.getElementById('earningsTotal').textContent = total.toFixed(2);
+async function createEarningsBreakdown() {
+    const userId = document.getElementById('earningsUser').value;
+    const period = document.getElementById('earningsPeriod').value;
+    const startDate = document.getElementById('earningsStartDate').value;
+    const endDate = document.getElementById('earningsEndDate').value;
+    const profit = document.getElementById('earningsProfit').value || 0;
+    const deposit = document.getElementById('earningsDeposit').value || 0;
+    const investment = document.getElementById('earningsInvestment').value || 0;
+    const notes = document.getElementById('earningsNotes').value;
+    
+    if (!userId || !startDate || !endDate) {
+        showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/earnings-breakdown`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                period,
+                startDate,
+                endDate,
+                profit: parseFloat(profit),
+                deposit: parseFloat(deposit),
+                investment: parseFloat(investment),
+                notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Earnings Breakdown Created', result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createEarningsModal')).hide();
+            document.getElementById('createEarningsForm').reset();
+            loadEarningsBreakdowns();
+        } else {
+            showToast('Creation Failed', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Earnings breakdown creation error:', error);
+        showToast('Error', 'Failed to create earnings breakdown', 'error');
+    }
+}
+
+async function createBulkEarningsBreakdown() {
+    const users = Array.from(document.getElementById('bulkEarningsUsers').selectedOptions).map(opt => opt.value);
+    const period = document.getElementById('bulkEarningsPeriod').value;
+    const startDate = document.getElementById('bulkEarningsStartDate').value;
+    const endDate = document.getElementById('bulkEarningsEndDate').value;
+    const profit = document.getElementById('bulkEarningsProfit').value || 0;
+    const deposit = document.getElementById('bulkEarningsDeposit').value || 0;
+    const investment = document.getElementById('bulkEarningsInvestment').value || 0;
+    const notes = document.getElementById('bulkEarningsNotes').value;
+    
+    if (users.length === 0 || !startDate || !endDate) {
+        showToast('Validation Error', 'Please select users and fill in all required fields', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/bulk-earnings-breakdown`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                users,
+                period,
+                startDate,
+                endDate,
+                profit: parseFloat(profit),
+                deposit: parseFloat(deposit),
+                investment: parseFloat(investment),
+                notes
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Bulk Earnings Created', result.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('bulkEarningsModal')).hide();
+            document.getElementById('bulkEarningsForm').reset();
+            loadEarningsBreakdowns();
+        } else {
+            showToast('Creation Failed', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Bulk earnings creation error:', error);
+        showToast('Error', 'Failed to create bulk earnings breakdown', 'error');
+    }
+}
+
+// ================== TRANSACTION REPORTS MANAGEMENT ==================
+
+async function loadTransactionReports() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/transaction-reports`);
+        const result = await response.json();
+        
+        if (result.success) {
+            displayTransactionReports(result.data.reports || []);
+        } else {
+            showToast('Error', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error loading transaction reports:', error);
+        showToast('Error', 'Failed to load transaction reports', 'error');
+    }
+}
+
+function displayTransactionReports(reports) {
+    const tbody = document.getElementById('reportsTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!reports || reports.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-4">
+                    <i class="fas fa-file-alt fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No transaction reports found</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    reports.forEach(report => {
+        const statusBadge = report.isSent ? 
+            '<span class="badge bg-success">Sent</span>' : 
+            '<span class="badge bg-warning">Draft</span>';
+        
+        const row = `
+            <tr>
+                <td>
+                    <div class="fw-bold">${escapeHtml(report.user?.username || 'N/A')}</div>
+                    <small class="text-muted">${escapeHtml(report.user?.email || '')}</small>
+                </td>
+                <td>${escapeHtml(report.title)}</td>
+                <td>${escapeHtml(report.description || 'No description')}</td>
+                <td>${report.transactions?.length || 0}</td>
+                <td class="fw-bold">$${(report.summary?.netBalance || 0).toFixed(2)}</td>
+                <td>${statusBadge}</td>
+                <td>${new Date(report.createdAt).toLocaleDateString()}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewReport('${report._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${!report.isSent ? 
+                            `<button class="btn btn-sm btn-outline-success" onclick="sendReport('${report._id}')">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>` : ''
+                        }
+                        <button class="btn btn-sm btn-outline-success" onclick="downloadReport('${report._id}')">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReport('${report._id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+// ================== INVESTMENT MANAGEMENT ==================
+
+async function loadInvestments() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/investments?status=active`);
+        const result = await response.json();
+        
+        if (result.success) {
+            displayInvestments(result.data.investments || []);
+        } else {
+            showToast('Error', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error loading investments:', error);
+        showToast('Error', 'Failed to load investments', 'error');
+    }
+}
+
+function displayInvestments(investments) {
+    const tbody = document.getElementById('investmentsTableBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!investments || investments.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No investments found</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    investments.forEach(investment => {
+        const statusBadge = investment.status === 'active' ? 
+            '<span class="badge bg-success">Active</span>' : 
+            '<span class="badge bg-secondary">' + investment.status + '</span>';
+        
+        const row = `
+            <tr>
+                <td>
+                    <div class="fw-bold">${escapeHtml(investment.user?.username || 'N/A')}</div>
+                    <small class="text-muted">${escapeHtml(investment.user?.email || '')}</small>
+                </td>
+                <td>${escapeHtml(investment.planName)}</td>
+                <td class="fw-bold">$${(investment.amount || 0).toFixed(2)}</td>
+                <td>${(investment.profitRate || 0)}%</td>
+                <td>$${(investment.totalProfitEarned || 0).toFixed(2)}</td>
+                <td>${statusBadge}</td>
+                <td>${new Date(investment.startDate).toLocaleDateString()}</td>
+                <td>${investment.endDate ? new Date(investment.endDate).toLocaleDateString() : 'N/A'}</td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewInvestment('${investment._id}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="addProfit('${investment._id}')">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="closeInvestment('${investment._id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+// ================== NOTIFICATION MANAGEMENT ==================
+
+async function loadNotifications() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/notifications`);
+        const result = await response.json();
+        
+        if (result.success) {
+            displayNotifications(result.data.notifications || []);
+            updateNotificationStats(result.data.stats || {});
+        } else {
+            showToast('Error', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error loading notifications:', error);
+        showToast('Error', 'Failed to load notifications', 'error');
+    }
+}
+
+function displayNotifications(notifications) {
+    const container = document.getElementById('notificationsList');
+    if (!container) return;
+    
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-4">
+                <i class="fas fa-bell fa-2x text-muted mb-2"></i>
+                <p class="text-muted">No notifications found</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = notifications.map(notification => `
+        <div class="notification-item mb-3 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">${escapeHtml(notification.title)}</h6>
+                    <p class="mb-1">${escapeHtml(notification.content)}</p>
+                    <small class="text-muted">
+                        ${notification.user ? `To: ${notification.user.username}` : 'To: All Users'} • 
+                        ${new Date(notification.createdAt).toLocaleString()}
+                    </small>
+                </div>
+                <span class="badge bg-${getNotificationTypeClass(notification.type)} ms-2">
+                    ${escapeHtml(notification.type)}
+                </span>
+            </div>
+            ${!notification.isRead ? '<span class="badge bg-primary">New</span>' : ''}
+        </div>
+    `).join('');
+}
+
+function updateNotificationStats(stats) {
+    updateElementText('totalNotifications', stats.total || 0);
+    updateElementText('unreadNotifications', stats.unread || 0);
+    updateElementText('todayNotifications', stats.today || 0);
+}
+
+// ================== SYSTEM SETTINGS ==================
+
+async function loadSystemSettings() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/system-settings`);
+        const result = await response.json();
+        
+        if (result.success) {
+            populateSystemSettings(result.data);
+        } else {
+            showToast('Error', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error loading system settings:', error);
+        showToast('Error', 'Failed to load system settings', 'error');
+    }
+}
+
+function populateSystemSettings(data) {
+    const { settings, plans, systemInfo } = data;
+    
+    // Populate general settings
+    if (settings) {
+        document.getElementById('siteName').value = settings.siteName || '';
+        document.getElementById('adminEmail').value = settings.adminEmail || '';
+        document.getElementById('currency').value = settings.currency || 'USD';
+        document.getElementById('sessionTimeout').value = settings.sessionTimeout || 60;
+        document.getElementById('maxLoginAttempts').value = settings.maxLoginAttempts || 5;
+        document.getElementById('enable2FA').checked = settings.enable2FA || false;
+        document.getElementById('maintenanceMode').checked = settings.maintenanceMode || false;
+    }
+    
+    // Populate investment plans
+    displayInvestmentPlans(plans || []);
+    
+    // Populate system info
+    if (systemInfo) {
+        updateElementText('systemVersion', systemInfo.version || '2.1.0');
+        updateElementText('lastBackup', systemInfo.lastBackup ? new Date(systemInfo.lastBackup).toLocaleString() : 'Never');
+        updateElementText('dbSize', systemInfo.dbSize || '0 MB');
+    }
+}
+
+function displayInvestmentPlans(plans) {
+    const container = document.getElementById('investmentPlansSettings');
+    if (!container) return;
+    
+    if (!plans || plans.length === 0) {
+        container.innerHTML = '<p class="text-muted">No investment plans configured</p>';
+        return;
+    }
+    
+    container.innerHTML = plans.map(plan => `
+        <div class="investment-plan-item mb-3 p-3 border rounded">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label">Plan Name</label>
+                    <input type="text" class="form-control plan-name" value="${escapeHtml(plan.name)}" data-plan-id="${plan._id}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Min Amount</label>
+                    <input type="number" class="form-control plan-min" value="${plan.minAmount}" data-plan-id="${plan._id}" step="1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Max Amount</label>
+                    <input type="number" class="form-control plan-max" value="${plan.maxAmount}" data-plan-id="${plan._id}" step="1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Profit Rate %</label>
+                    <input type="number" class="form-control plan-profit" value="${plan.profitRate}" data-plan-id="${plan._id}" step="0.1">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Duration (days)</label>
+                    <input type="number" class="form-control plan-duration" value="${plan.duration}" data-plan-id="${plan._id}" step="1">
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="btn-group-vertical w-100">
+                        <button class="btn btn-sm btn-success btn-save-plan" data-plan-id="${plan._id}">
+                            <i class="fas fa-save"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger btn-delete-plan" data-plan-id="${plan._id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function saveSystemSettings() {
+    const settings = {
+        siteName: document.getElementById('siteName').value,
+        adminEmail: document.getElementById('adminEmail').value,
+        currency: document.getElementById('currency').value,
+        sessionTimeout: parseInt(document.getElementById('sessionTimeout').value),
+        maxLoginAttempts: parseInt(document.getElementById('maxLoginAttempts').value),
+        enable2FA: document.getElementById('enable2FA').checked,
+        maintenanceMode: document.getElementById('maintenanceMode').checked
+    };
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/system-settings`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Settings Saved', 'System settings have been updated successfully', 'success');
+        } else {
+            showToast('Save Failed', result.message, 'error');
+        }
+    } catch (error) {
+        console.error('Error saving system settings:', error);
+        showToast('Error', 'Failed to save system settings', 'error');
+    }
+}
+
+// ================== UTILITY FUNCTIONS ==================
+
+function getNotificationTypeClass(type) {
+    const classes = {
+        'info': 'info',
+        'success': 'success',
+        'warning': 'warning',
+        'error': 'danger'
+    };
+    return classes[type] || 'secondary';
+}
+
+// Initialize user dropdowns
+async function initializeUserDropdowns() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/users?limit=1000`);
+        const result = await response.json();
+        
+        if (result.success) {
+            const users = result.data.users || [];
+            populateUserDropdowns(users);
+        }
+    } catch (error) {
+        console.error('Error loading users for dropdowns:', error);
+    }
+}
+
+function populateUserDropdowns(users) {
+    const dropdowns = [
+        'notificationUser',
+        'earningsUser',
+        'bulkEarningsUsers'
+    ];
+    
+    dropdowns.forEach(dropdownId => {
+        const dropdown = document.getElementById(dropdownId);
+        if (dropdown) {
+            // Clear existing options except the first one
+            while (dropdown.options.length > 1) {
+                dropdown.remove(1);
+            }
+            
+            // Add user options
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user._id;
+                option.textContent = `${user.username} (${user.email})`;
+                dropdown.appendChild(option);
+            });
+        }
+    });
+}
+
+// Update the switchTab function to load appropriate data
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all sidebar links
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Show the selected tab content
+    const targetTab = document.getElementById(tabName + 'Tab');
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+    
+    // Add active class to the clicked sidebar link
+    const activeLink = document.querySelector(`.sidebar .nav-link[data-tab="${tabName}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+    
+    currentTab = tabName;
+    
+    // Load specific data for the tab
+    switch(tabName) {
+        case 'users':
+            loadUsers();
+            break;
+        case 'transactions':
+            loadTransactions();
+            break;
+        case 'deposits':
+            loadPendingDeposits('pending');
+            break;
+        case 'withdrawals':
+            loadPendingWithdrawals('pending');
+            break;
+        case 'investments':
+            loadInvestments();
+            break;
+        case 'earnings':
+            loadEarningsBreakdowns();
+            break;
+        case 'reports':
+            loadTransactionReports();
+            break;
+        case 'notifications':
+            loadNotifications();
+            break;
+        case 'system':
+            loadSystemSettings();
+            break;
+    }
+}
+
+// Update the initializeDashboard function
+async function initializeDashboard() {
+    await loadDashboardStats();
+    await initializeUserDropdowns(); // Initialize dropdowns first
+    await loadUsers();
+    await loadTransactions();
+    await loadPendingDeposits();
+    await loadPendingWithdrawals();
+    await loadInvestments();
+    await loadNotifications();
+    await loadEarningsBreakdowns();
+    await loadTransactionReports();
+    await loadSystemSettings();
+    initializeRevenueChart();
+}
+
+
+// Placeholder functions for actions that need implementation
+function viewEarningsBreakdown(breakdownId) {
+    showToast('View Earnings', `Viewing earnings breakdown ${breakdownId}`, 'info');
+}
+
+function finalizeEarningsBreakdown(breakdownId) {
+    if (confirm('Are you sure you want to finalize this earnings breakdown?')) {
+        showToast('Earnings Finalized', 'Earnings breakdown has been finalized', 'success');
+    }
+}
+
+function deleteEarningsBreakdown(breakdownId) {
+    if (confirm('Are you sure you want to delete this earnings breakdown?')) {
+        showToast('Earnings Deleted', 'Earnings breakdown has been deleted', 'success');
+    }
+}
+
+function viewReport(reportId) {
+    showToast('View Report', `Viewing report ${reportId}`, 'info');
+}
+
+function sendReport(reportId) {
+    if (confirm('Are you sure you want to send this report to the user?')) {
+        showToast('Report Sent', 'Report has been sent to user', 'success');
+    }
+}
+
+function downloadReport(reportId) {
+    showToast('Download Report', `Downloading report ${reportId}`, 'info');
+}
+
+function deleteReport(reportId) {
+    if (confirm('Are you sure you want to delete this report?')) {
+        showToast('Report Deleted', 'Report has been deleted', 'success');
+    }
+}
+
+function viewInvestment(investmentId) {
+    showToast('View Investment', `Viewing investment ${investmentId}`, 'info');
+}
+
+function addProfit(investmentId) {
+    const amount = prompt('Enter profit amount:');
+    if (amount && !isNaN(amount)) {
+        showToast('Profit Added', `Added $${amount} profit to investment`, 'success');
+    }
+}
+
+function closeInvestment(investmentId) {
+    if (confirm('Are you sure you want to close this investment?')) {
+        showToast('Investment Closed', 'Investment has been closed', 'success');
+    }
+}
+
+function saveInvestmentPlan(planId) {
+    showToast('Plan Saved', `Investment plan ${planId} has been saved`, 'success');
+}
+
+function deleteInvestmentPlan(planId) {
+    if (confirm('Are you sure you want to delete this investment plan?')) {
+        showToast('Plan Deleted', 'Investment plan has been deleted', 'success');
+    }
+}
+
+function setupEventListeners() {
+    // Existing event listeners...
+    
+    // Add these new event listeners:
+    
+    // Earnings calculation
+    ['earningsProfit', 'earningsDeposit', 'earningsInvestment'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', calculateEarningsTotal);
+        }
+    });
+    
+    // Bulk earnings users selection
+    const bulkUsers = document.getElementById('bulkEarningsUsers');
+    if (bulkUsers) {
+        bulkUsers.addEventListener('change', function() {
+            const selectedCount = this.selectedOptions.length;
+            showToast('Users Selected', `${selectedCount} users selected for bulk operation`, 'info');
+        });
+    }
+    
+    // Investment plan settings
+    document.getElementById('investmentPlansSettings').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-save-plan')) {
+            const planId = e.target.getAttribute('data-plan-id');
+            saveInvestmentPlan(planId);
+        } else if (e.target.classList.contains('btn-delete-plan')) {
+            const planId = e.target.getAttribute('data-plan-id');
+            deleteInvestmentPlan(planId);
+        }
+    });
+    
+    // System settings form
+    const systemForm = document.querySelector('#systemTab form');
+    if (systemForm) {
+        systemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveSystemSettings();
+        });
+    }
+}
+
+// function calculateEarningsTotal() {
+//     const profit = parseFloat(document.getElementById('earningsProfit').value) || 0;
+//     const deposit = parseFloat(document.getElementById('earningsDeposit').value) || 0;
+//     const investment = parseFloat(document.getElementById('earningsInvestment').value) || 0;
+//     const total = profit + deposit + investment;
+//     document.getElementById('earningsTotal').textContent = total.toFixed(2);
+// }
+
+
+function setupEventListeners() {
+    // Existing event listeners...
+    
+    // Add these new event listeners:
+    
+    // Earnings calculation
+    ['earningsProfit', 'earningsDeposit', 'earningsInvestment'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', calculateEarningsTotal);
+        }
+    });
+    
+    // Bulk earnings users selection
+    const bulkUsers = document.getElementById('bulkEarningsUsers');
+    if (bulkUsers) {
+        bulkUsers.addEventListener('change', function() {
+            const selectedCount = this.selectedOptions.length;
+            showToast('Users Selected', `${selectedCount} users selected for bulk operation`, 'info');
+        });
+    }
+    
+    // Investment plan settings
+    document.getElementById('investmentPlansSettings').addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-save-plan')) {
+            const planId = e.target.getAttribute('data-plan-id');
+            saveInvestmentPlan(planId);
+        } else if (e.target.classList.contains('btn-delete-plan')) {
+            const planId = e.target.getAttribute('data-plan-id');
+            deleteInvestmentPlan(planId);
+        }
+    });
+    
+    // System settings form
+    const systemForm = document.querySelector('#systemTab form');
+    if (systemForm) {
+        systemForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            saveSystemSettings();
+        });
+    }
 }
 
 async function createEarningsBreakdown() {
