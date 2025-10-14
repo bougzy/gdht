@@ -204,6 +204,50 @@ userSchema.methods.matchSecretAnswer = async function(enteredAnswer) {
 
 const User = mongoose.model("User", userSchema);
 
+
+// Earnings Breakdown Schema
+const earningsBreakdownSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  period: { type: String, enum: ["daily", "weekly", "monthly"], required: true },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+  profit: { type: Number, default: 0 },
+  deposit: { type: Number, default: 0 },
+  investment: { type: Number, default: 0 },
+  totalEarnings: { type: Number, default: 0 },
+  notes: String,
+  generatedBy: { type: String, default: "admin" },
+  isFinalized: { type: Boolean, default: false }
+}, { timestamps: true });
+
+const EarningsBreakdown = mongoose.model("EarningsBreakdown", earningsBreakdownSchema);
+
+// Custom Transaction Report Schema
+const transactionReportSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  title: { type: String, required: true },
+  description: String,
+  transactions: [{
+    date: Date,
+    type: String,
+    amount: Number,
+    description: String,
+    balance: Number
+  }],
+  summary: {
+    totalDeposits: Number,
+    totalWithdrawals: Number,
+    totalInvestments: Number,
+    totalProfits: Number,
+    netBalance: Number
+  },
+  generatedBy: { type: String, default: "admin" },
+  isSent: { type: Boolean, default: false },
+  sentAt: Date
+}, { timestamps: true });
+
+const TransactionReport = mongoose.model("TransactionReport", transactionReportSchema);
+
 // Admin Schema
 const adminSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
@@ -1544,6 +1588,512 @@ app.put("/api/admin/user/:userId/balance", adminAuth, async (req, res) => {
   } catch (error) { 
     console.error('Balance update error:', error);
     res.status(500).json({ success: false, message: error.message }); 
+  }
+});
+
+// ================== ENHANCED MANUAL INVESTMENT MANAGEMENT ==================
+
+// Manual investment adjustment
+app.post("/api/admin/user/:userId/adjust-investment", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { amount, action, note, planName } = req.body;
+    
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Valid amount is required" 
+      });
+    }
+
+    if (!['add', 'subtract', 'set'].includes(action)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid action. Use 'add', 'subtract', or 'set'" 
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+
+    const oldTotalInvested = user.totalInvested;
+    let newAmount = 0;
+
+    switch (action) {
+      case 'add':
+        user.totalInvested += parseFloat(amount);
+        newAmount = user.totalInvested;
+        break;
+      case 'subtract':
+        user.totalInvested = Math.max(0, user.totalInvested - parseFloat(amount));
+        newAmount = user.totalInvested;
+        break;
+      case 'set':
+        user.totalInvested = parseFloat(amount);
+        newAmount = user.totalInvested;
+        break;
+    }
+
+    await user.save();
+
+    // Create manual investment record
+    const investment = await Investment.create({
+      user: user._id,
+      planName: planName || "Manual Adjustment",
+      amount: parseFloat(amount),
+      profitRate: 0, // Manual adjustments don't have profit rates
+      expectedProfit: 0,
+      startDate: new Date(),
+      status: "active",
+      isManual: true
+    });
+
+    // Create transaction record
+    const transaction = await Transaction.create({
+      user: user._id,
+      type: "investment",
+      amount: parseFloat(amount),
+      status: "approved",
+      investmentPlan: planName || "Manual Adjustment",
+      adminNote: `Manual investment ${action}: $${amount}. ${note || ''}`,
+      processed: true
+    });
+
+    // Link transaction to investment
+    investment.transaction = transaction._id;
+    await investment.save();
+
+    // Send notification to user
+    await sendNotification(
+      user._id,
+      "Investment Updated 📊",
+      `Admin has ${action}ed $${amount} to your investments. ${note || ''}`,
+      "investment",
+      transaction._id,
+      "transaction"
+    );
+
+    // Real-time update via WebSocket
+    sendUserUpdate(user._id.toString(), {
+      type: 'INVESTMENT_ADJUSTED',
+      totalInvested: user.totalInvested,
+      amount: amount,
+      action: action,
+      investment: investment,
+      transaction: transaction,
+      message: `Your investments have been ${action}ed by $${amount}`,
+      timestamp: new Date().toISOString()
+    });
+
+    res.json({ 
+      success: true,
+      message: `Investment ${action}ed successfully`, 
+      data: {
+        user: {
+          totalInvested: user.totalInvested,
+          previousBalance: oldTotalInvested
+        },
+        investment: investment,
+        transaction: transaction
+      }
+    });
+  } catch (error) {
+    console.error('Investment adjustment error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Investment adjustment failed" 
+    });
+  }
+});
+
+// ================== EARNINGS BREAKDOWN MANAGEMENT ==================
+
+// Create earnings breakdown
+app.post("/api/admin/user/:userId/earnings-breakdown", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { period, startDate, endDate, profit, deposit, investment, notes } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+
+    const totalEarnings = (parseFloat(profit) || 0) + (parseFloat(deposit) || 0) + (parseFloat(investment) || 0);
+
+    const earningsBreakdown = await EarningsBreakdown.create({
+      user: user._id,
+      period,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      profit: parseFloat(profit) || 0,
+      deposit: parseFloat(deposit) || 0,
+      investment: parseFloat(investment) || 0,
+      totalEarnings,
+      notes,
+      generatedBy: "admin"
+    });
+
+    // Send notification to user
+    await sendNotification(
+      user._id,
+      "Earnings Breakdown Available 📈",
+      `Your ${period} earnings breakdown for ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()} is now available. Total: $${totalEarnings.toFixed(2)}`,
+      "profit",
+      earningsBreakdown._id,
+      "earnings"
+    );
+
+    res.json({ 
+      success: true,
+      message: "Earnings breakdown created successfully", 
+      data: { earningsBreakdown }
+    });
+  } catch (error) {
+    console.error('Earnings breakdown creation error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to create earnings breakdown" 
+    });
+  }
+});
+
+// Get user's earnings breakdowns
+app.get("/api/admin/user/:userId/earnings-breakdowns", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { period, page = 1, limit = 10 } = req.query;
+    
+    const filter = { user: userId };
+    if (period && period !== 'all') filter.period = period;
+    
+    const skip = (page - 1) * limit;
+    
+    const earnings = await EarningsBreakdown.find(filter)
+      .sort({ startDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await EarningsBreakdown.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: {
+        earnings,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Finalize earnings breakdown (mark as completed)
+app.put("/api/admin/earnings-breakdown/:breakdownId/finalize", adminAuth, async (req, res) => {
+  try {
+    const { breakdownId } = req.params;
+    
+    const earningsBreakdown = await EarningsBreakdown.findById(breakdownId).populate('user');
+    if (!earningsBreakdown) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Earnings breakdown not found" 
+      });
+    }
+    
+    earningsBreakdown.isFinalized = true;
+    await earningsBreakdown.save();
+
+    // Send notification to user
+    await sendNotification(
+      earningsBreakdown.user._id,
+      "Earnings Breakdown Finalized ✅",
+      `Your ${earningsBreakdown.period} earnings breakdown has been finalized. Total earnings: $${earningsBreakdown.totalEarnings.toFixed(2)}`,
+      "profit",
+      earningsBreakdown._id,
+      "earnings"
+    );
+
+    res.json({ 
+      success: true,
+      message: "Earnings breakdown finalized successfully", 
+      data: { earningsBreakdown }
+    });
+  } catch (error) {
+    console.error('Earnings finalization error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to finalize earnings breakdown" 
+    });
+  }
+});
+
+// ================== CUSTOM TRANSACTION REPORT MANAGEMENT ==================
+
+// Create custom transaction report
+app.post("/api/admin/user/:userId/transaction-report", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { title, description, transactions, summary } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        success: false,
+        message: "User not found" 
+      });
+    }
+
+    const transactionReport = await TransactionReport.create({
+      user: user._id,
+      title,
+      description,
+      transactions: transactions.map(t => ({
+        date: new Date(t.date),
+        type: t.type,
+        amount: parseFloat(t.amount),
+        description: t.description,
+        balance: parseFloat(t.balance)
+      })),
+      summary: {
+        totalDeposits: parseFloat(summary.totalDeposits) || 0,
+        totalWithdrawals: parseFloat(summary.totalWithdrawals) || 0,
+        totalInvestments: parseFloat(summary.totalInvestments) || 0,
+        totalProfits: parseFloat(summary.totalProfits) || 0,
+        netBalance: parseFloat(summary.netBalance) || 0
+      },
+      generatedBy: "admin"
+    });
+
+    res.json({ 
+      success: true,
+      message: "Transaction report created successfully", 
+      data: { transactionReport }
+    });
+  } catch (error) {
+    console.error('Transaction report creation error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to create transaction report" 
+    });
+  }
+});
+
+// Send transaction report to user
+app.put("/api/admin/transaction-report/:reportId/send", adminAuth, async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    
+    const transactionReport = await TransactionReport.findById(reportId).populate('user');
+    if (!transactionReport) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Transaction report not found" 
+      });
+    }
+    
+    transactionReport.isSent = true;
+    transactionReport.sentAt = new Date();
+    await transactionReport.save();
+
+    // Send notification to user
+    await sendNotification(
+      transactionReport.user._id,
+      "Transaction Report Available 📋",
+      `A new transaction report "${transactionReport.title}" has been generated for you.`,
+      "info",
+      transactionReport._id,
+      "report"
+    );
+
+    res.json({ 
+      success: true,
+      message: "Transaction report sent to user successfully", 
+      data: { transactionReport }
+    });
+  } catch (error) {
+    console.error('Transaction report sending error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to send transaction report" 
+    });
+  }
+});
+
+// Get user's transaction reports
+app.get("/api/admin/user/:userId/transaction-reports", adminAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+    
+    const skip = (page - 1) * limit;
+    
+    const reports = await TransactionReport.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await TransactionReport.countDocuments({ user: userId });
+    
+    res.json({
+      success: true,
+      data: {
+        reports,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ================== BULK OPERATIONS ==================
+
+// Bulk earnings breakdown creation
+app.post("/api/admin/bulk-earnings-breakdown", adminAuth, async (req, res) => {
+  try {
+    const { users, period, startDate, endDate, profit, deposit, investment, notes } = req.body;
+    
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Users array is required" 
+      });
+    }
+
+    const results = [];
+    
+    for (const userId of users) {
+      const user = await User.findById(userId);
+      if (user) {
+        const totalEarnings = (parseFloat(profit) || 0) + (parseFloat(deposit) || 0) + (parseFloat(investment) || 0);
+        
+        const earningsBreakdown = await EarningsBreakdown.create({
+          user: user._id,
+          period,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          profit: parseFloat(profit) || 0,
+          deposit: parseFloat(deposit) || 0,
+          investment: parseFloat(investment) || 0,
+          totalEarnings,
+          notes,
+          generatedBy: "admin"
+        });
+
+        await sendNotification(
+          user._id,
+          "Earnings Breakdown Available 📈",
+          `Your ${period} earnings breakdown is now available. Total: $${totalEarnings.toFixed(2)}`,
+          "profit",
+          earningsBreakdown._id,
+          "earnings"
+        );
+
+        results.push({
+          userId: user._id,
+          username: user.username,
+          earningsBreakdown: earningsBreakdown._id
+        });
+      }
+    }
+    
+    res.json({ 
+      success: true,
+      message: `Earnings breakdown created for ${results.length} users`, 
+      data: { results }
+    });
+  } catch (error) {
+    console.error('Bulk earnings breakdown error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Bulk earnings breakdown creation failed" 
+    });
+  }
+});
+
+// ================== USER ROUTES FOR NEW FEATURES ==================
+
+// Get user's earnings breakdowns
+app.get("/api/user/earnings-breakdowns", protect, updateUserLocation, async (req, res) => {
+  try {
+    const { period, page = 1, limit = 10 } = req.query;
+    
+    const filter = { user: req.user._id };
+    if (period && period !== 'all') filter.period = period;
+    
+    const skip = (page - 1) * limit;
+    
+    const earnings = await EarningsBreakdown.find(filter)
+      .sort({ startDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await EarningsBreakdown.countDocuments(filter);
+    
+    res.json({
+      success: true,
+      data: {
+        earnings,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Get user's transaction reports
+app.get("/api/user/transaction-reports", protect, updateUserLocation, async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    
+    const skip = (page - 1) * limit;
+    
+    const reports = await TransactionReport.find({ user: req.user._id, isSent: true })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    const total = await TransactionReport.countDocuments({ user: req.user._id, isSent: true });
+    
+    res.json({
+      success: true,
+      data: {
+        reports,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

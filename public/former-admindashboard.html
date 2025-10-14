@@ -1,0 +1,3386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Galaxy Digital Holdings</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --admin-color: #8e44ad;
+            --admin-dark: #6c3483;
+            --admin-light: #9b59b6;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--admin-dark) 0%, var(--admin-color) 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white !important;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            padding: 8px 15px !important;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            position: fixed;
+            width: 250px;
+            z-index: 100;
+        }
+        
+        .sidebar-sticky {
+            position: sticky;
+            top: 0;
+            height: calc(100vh - 76px);
+            padding-top: 20px;
+            overflow-y: auto;
+        }
+        
+        .sidebar .nav-link {
+            color: var(--dark-color) !important;
+            padding: 12px 20px;
+            margin: 5px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--admin-color);
+            color: white !important;
+            transform: translateX(5px);
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+            min-height: calc(100vh - 76px);
+        }
+        
+        .dashboard-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--admin-color);
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-card .card-body {
+            padding: 25px;
+        }
+        
+        .stat-card {
+            text-align: center;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-title {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-users {
+            border-left-color: var(--info-color);
+        }
+        
+        .card-deposits {
+            border-left-color: var(--success-color);
+        }
+        
+        .card-withdrawals {
+            border-left-color: var(--warning-color);
+        }
+        
+        .card-investments {
+            border-left-color: var(--admin-color);
+        }
+        
+        .btn-admin {
+            background-color: var(--admin-color);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .btn-admin:hover {
+            background-color: var(--admin-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border: none;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+            border: none;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border: none;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+        }
+        
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--admin-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--success-color);
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .offline-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        .action-buttons .btn {
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .system-health {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .health-item {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .health-status {
+            font-size: 0.8rem;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .status-healthy {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-critical {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .recent-activity {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .recent-activity li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+        
+        .recent-activity li:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--admin-color);
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        
+        /* Real-time indicators */
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .status-connected {
+            background-color: var(--success-color);
+        }
+        
+        .status-disconnected {
+            background-color: var(--danger-color);
+        }
+        
+        .status-connecting {
+            background-color: var(--warning-color);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Toast notifications */
+        .toast-container {
+            z-index: 9999;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: relative;
+                height: auto;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Tabs */
+        .nav-tabs .nav-link {
+            color: var(--dark-color);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: var(--admin-color);
+            color: white;
+            border: none;
+        }
+        
+        .tab-content {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        /* Modal enhancements */
+        .modal-header {
+            background: linear-gradient(135deg, var(--admin-dark) 0%, var(--admin-color) 100%);
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        /* Quick actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .quick-action-btn {
+            background: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background-color: var(--admin-color);
+            color: white;
+        }
+        
+        .quick-action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-user-shield me-2"></i>Galaxy Digital Holdings - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="adminLogout">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" data-tab="dashboard">
+                                <i class="fas fa-tachometer-alt"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="users">
+                                <i class="fas fa-users"></i>User Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="transactions">
+                                <i class="fas fa-exchange-alt"></i>Transactions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="deposits">
+                                <i class="fas fa-money-bill-wave"></i>Deposits
+                                <span class="notification-badge d-none" id="pendingDepositsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="withdrawals">
+                                <i class="fas fa-wallet"></i>Withdrawals
+                                <span class="notification-badge d-none" id="pendingWithdrawalsBadge">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="investments">
+                                <i class="fas fa-chart-line"></i>Investments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="notifications">
+                                <i class="fas fa-bell"></i>Notifications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-tab="system">
+                                <i class="fas fa-cog"></i>System Settings
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="mt-4 p-3">
+                        <div class="connection-status">
+                            <span class="status-indicator status-connected" id="adminConnectionIndicator"></span>
+                            <span id="adminConnectionStatus">Connected</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted" id="lastSync">Last sync: Just now</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="tab-content active">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Admin Dashboard</h2>
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-admin me-2" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt me-1"></i>Refresh
+                            </button>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cog me-1"></i>Options
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="exportData()">Export Data</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="showSystemStats()">System Statistics</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="broadcastNotification()">Broadcast Message</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <div class="quick-action-btn" onclick="showPendingDeposits()">
+                            <i class="fas fa-money-bill-wave text-success"></i>
+                            <div>Pending Deposits</div>
+                            <small id="quickDepositsCount">0</small>
+                        </div>
+                        <div class="quick-action-btn" onclick="showPendingWithdrawals()">
+                            <i class="fas fa-wallet text-warning"></i>
+                            <div>Pending Withdrawals</div>
+                            <small id="quickWithdrawalsCount">0</small>
+                        </div>
+                        <div class="quick-action-btn" onclick="showRecentUsers()">
+                            <i class="fas fa-user-plus text-info"></i>
+                            <div>New Users</div>
+                            <small id="quickNewUsersCount">0</small>
+                        </div>
+                        <div class="quick-action-btn" onclick="distributeProfits()">
+                            <i class="fas fa-gift text-primary"></i>
+                            <div>Distribute Profits</div>
+                            <small>Run payout</small>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card dashboard-card card-users">
+                                <div class="card-body stat-card">
+                                    <div class="stat-icon text-info">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="stat-number" id="totalUsers">0</div>
+                                    <div class="stat-title">Total Users</div>
+                                    <div class="mt-2">
+                                        <span class="online-indicator"></span>
+                                        <small class="text-muted" id="onlineUsers">0 online</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card card-deposits">
+                                <div class="card-body stat-card">
+                                    <div class="stat-icon text-success">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                    </div>
+                                    <div class="stat-number">$<span id="totalDeposits">0</span></div>
+                                    <div class="stat-title">Total Deposits</div>
+                                    <div class="mt-2">
+                                        <small class="text-muted" id="pendingDepositsCount">0 pending</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card card-withdrawals">
+                                <div class="card-body stat-card">
+                                    <div class="stat-icon text-warning">
+                                        <i class="fas fa-wallet"></i>
+                                    </div>
+                                    <div class="stat-number">$<span id="totalWithdrawals">0</span></div>
+                                    <div class="stat-title">Total Withdrawals</div>
+                                    <div class="mt-2">
+                                        <small class="text-muted" id="pendingWithdrawalsCount">0 pending</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card dashboard-card card-investments">
+                                <div class="card-body stat-card">
+                                    <div class="stat-icon text-primary">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="stat-number">$<span id="totalInvestments">0</span></div>
+                                    <div class="stat-title">Total Investments</div>
+                                    <div class="mt-2">
+                                        <small class="text-muted" id="activeInvestmentsCount">0 active</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Additional Info -->
+                    <div class="row mt-4">
+                        <div class="col-md-8">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Revenue Overview</h5>
+                                    <div class="chart-container">
+                                        <canvas id="revenueChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">System Health</h5>
+                                    <div class="system-health">
+                                        <div class="health-item">
+                                            <div class="stat-number" id="dbStatus">✓</div>
+                                            <div class="stat-title">Database</div>
+                                            <div class="health-status status-healthy mt-1">Healthy</div>
+                                        </div>
+                                        <div class="health-item">
+                                            <div class="stat-number" id="wsStatus">✓</div>
+                                            <div class="stat-title">WebSocket</div>
+                                            <div class="health-status status-healthy mt-1">Active</div>
+                                        </div>
+                                        <div class="health-item">
+                                            <div class="stat-number" id="apiStatus">✓</div>
+                                            <div class="stat-title">API</div>
+                                            <div class="health-status status-healthy mt-1">Running</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Recent Activity</h6>
+                                    <ul class="recent-activity" id="recentActivity">
+                                        <li>
+                                            <div class="activity-icon">
+                                                <i class="fas fa-user-plus"></i>
+                                            </div>
+                                            <div>
+                                                <div>New user registration</div>
+                                                <small class="text-muted">2 minutes ago</small>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="activity-icon">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </div>
+                                            <div>
+                                                <div>Deposit approved</div>
+                                                <small class="text-muted">5 minutes ago</small>
+                                            </div>
+                                        </li>
+                                        <li>
+                                            <div class="activity-icon">
+                                                <i class="fas fa-wallet"></i>
+                                            </div>
+                                            <div>
+                                                <div>Withdrawal processed</div>
+                                                <small class="text-muted">10 minutes ago</small>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management Tab -->
+                <div id="usersTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>User Management</h2>
+                        <div class="d-flex">
+                            <div class="search-box me-2">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="form-control" placeholder="Search users..." id="userSearch">
+                            </div>
+                            <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                                <i class="fas fa-plus me-1"></i>Add User
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="usersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Email</th>
+                                            <th>Location</th>
+                                            <th>Balance</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usersTableBody">
+                                        <!-- Users will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <span id="usersTableInfo">Showing 0 users</span>
+                                </div>
+                                <nav>
+                                    <ul class="pagination" id="usersPagination">
+                                        <!-- Pagination will be loaded here -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions Tab -->
+                <div id="transactionsTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Transaction History</h2>
+                        <div class="d-flex">
+                            <select class="form-select me-2" id="transactionTypeFilter">
+                                <option value="all">All Types</option>
+                                <option value="deposit">Deposits</option>
+                                <option value="withdrawal">Withdrawals</option>
+                                <option value="investment">Investments</option>
+                                <option value="profit">Profits</option>
+                            </select>
+                            <select class="form-select me-2" id="transactionStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button class="btn btn-admin" onclick="loadTransactions()">
+                                <i class="fas fa-filter me-1"></i>Apply
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="transactionsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactionsTableBody">
+                                        <!-- Transactions will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <span id="transactionsTableInfo">Showing 0 transactions</span>
+                                </div>
+                                <nav>
+                                    <ul class="pagination" id="transactionsPagination">
+                                        <!-- Pagination will be loaded here -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deposits Tab -->
+                <div id="depositsTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Deposit Management</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary active" data-filter="pending">Pending</button>
+                            <button class="btn btn-outline-primary" data-filter="approved">Approved</button>
+                            <button class="btn btn-outline-primary" data-filter="rejected">Rejected</button>
+                            <button class="btn btn-outline-primary" data-filter="all">All</button>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="depositsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Proof</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="depositsTableBody">
+                                        <!-- Deposits will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Withdrawals Tab -->
+                <div id="withdrawalsTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Withdrawal Management</h2>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary active" data-filter="pending">Pending</button>
+                            <button class="btn btn-outline-primary" data-filter="approved">Approved</button>
+                            <button class="btn btn-outline-primary" data-filter="rejected">Rejected</button>
+                            <button class="btn btn-outline-primary" data-filter="all">All</button>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="withdrawalsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Amount</th>
+                                            <th>Method</th>
+                                            <th>Wallet</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="withdrawalsTableBody">
+                                        <!-- Withdrawals will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investments Tab -->
+                <div id="investmentsTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Investment Management</h2>
+                        <div class="d-flex">
+                            <button class="btn btn-admin me-2" onclick="distributeProfits()">
+                                <i class="fas fa-gift me-1"></i>Distribute Profits
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addInvestmentModal">
+                                <i class="fas fa-plus me-1"></i>Add Investment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="investmentsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Plan</th>
+                                            <th>Amount</th>
+                                            <th>Profit Rate</th>
+                                            <th>Earned</th>
+                                            <th>Status</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="investmentsTableBody">
+                                        <!-- Investments will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notificationsTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Notification Center</h2>
+                        <div class="d-flex">
+                            <button class="btn btn-admin me-2" data-bs-toggle="modal" data-bs-target="#sendNotificationModal">
+                                <i class="fas fa-paper-plane me-1"></i>Send Notification
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#broadcastModal">
+                                <i class="fas fa-bullhorn me-1"></i>Broadcast
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Recent Notifications</h5>
+                                    <div id="notificationsList">
+                                        <!-- Notifications will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Quick Stats</h5>
+                                    <div class="mb-3">
+                                        <strong>Total Sent:</strong> <span id="totalNotifications">0</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Unread:</strong> <span id="unreadNotifications">0</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Today:</strong> <span id="todayNotifications">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card dashboard-card mt-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Templates</h5>
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-primary text-start" onclick="useTemplate('welcome')">
+                                            <i class="fas fa-envelope me-2"></i>Welcome Message
+                                        </button>
+                                        <button class="btn btn-outline-success text-start" onclick="useTemplate('deposit_approved')">
+                                            <i class="fas fa-check me-2"></i>Deposit Approved
+                                        </button>
+                                        <button class="btn btn-outline-warning text-start" onclick="useTemplate('withdrawal_processed')">
+                                            <i class="fas fa-wallet me-2"></i>Withdrawal Processed
+                                        </button>
+                                        <button class="btn btn-outline-info text-start" onclick="useTemplate('profit_added')">
+                                            <i class="fas fa-gift me-2"></i>Profit Added
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Settings Tab -->
+                <div id="systemTab" class="tab-content">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>System Settings</h2>
+                        <button class="btn btn-admin" onclick="saveSystemSettings()">
+                            <i class="fas fa-save me-1"></i>Save Settings
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">General Settings</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Site Name</label>
+                                        <input type="text" class="form-control" id="siteName" value="Galaxy Digital Holdings">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin Email</label>
+                                        <input type="email" class="form-control" id="adminEmail" value="admin@galaxydigital.com">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Currency</label>
+                                        <select class="form-select" id="currency">
+                                            <option value="USD">USD ($)</option>
+                                            <option value="EUR">EUR (€)</option>
+                                            <option value="GBP">GBP (£)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card dashboard-card mt-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Investment Plans</h5>
+                                    <div id="investmentPlansSettings">
+                                        <!-- Investment plans settings will be loaded here -->
+                                    </div>
+                                    <button class="btn btn-outline-primary w-100 mt-3" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+                                        <i class="fas fa-plus me-1"></i>Add New Plan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add to admin dashboard tabs -->
+<li class="nav-item">
+  <a class="nav-link" href="#" data-tab="earnings">
+    <i class="fas fa-chart-pie"></i>Earnings Management
+  </a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="#" data-tab="reports">
+    <i class="fas fa-file-alt"></i>Transaction Reports
+  </a>
+</li>
+
+<!-- Earnings Management Tab -->
+<div id="earningsTab" class="tab-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Earnings Breakdown Management</h2>
+    <div class="d-flex">
+      <button class="btn btn-admin me-2" data-bs-toggle="modal" data-bs-target="#createEarningsModal">
+        <i class="fas fa-plus me-1"></i>Create Breakdown
+      </button>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bulkEarningsModal">
+        <i class="fas fa-users me-1"></i>Bulk Create
+      </button>
+    </div>
+  </div>
+
+  <div class="card dashboard-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover" id="earningsTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Period</th>
+              <th>Date Range</th>
+              <th>Profit</th>
+              <th>Deposit</th>
+              <th>Investment</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="earningsTableBody">
+            <!-- Earnings breakdowns will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Transaction Reports Tab -->
+<div id="reportsTab" class="tab-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Custom Transaction Reports</h2>
+    <button class="btn btn-admin" data-bs-toggle="modal" data-bs-target="#createReportModal">
+      <i class="fas fa-plus me-1"></i>Create Report
+    </button>
+  </div>
+
+  <div class="card dashboard-card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover" id="reportsTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Transactions</th>
+              <th>Net Balance</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reportsTableBody">
+            <!-- Reports will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+                        
+                        <div class="col-md-6">
+                            <div class="card dashboard-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Security Settings</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin Session Timeout (minutes)</label>
+                                        <input type="number" class="form-control" id="sessionTimeout" value="60">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Max Login Attempts</label>
+                                        <input type="number" class="form-control" id="maxLoginAttempts" value="5">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="enable2FA">
+                                        <label class="form-check-label" for="enable2FA">Enable Two-Factor Authentication</label>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="maintenanceMode">
+                                        <label class="form-check-label" for="maintenanceMode">Maintenance Mode</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card dashboard-card mt-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">System Information</h5>
+                                    <div class="mb-2">
+                                        <strong>Version:</strong> <span id="systemVersion">2.1.0</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Uptime:</strong> <span id="systemUptime">0 days 00:00:00</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Last Backup:</strong> <span id="lastBackup">Never</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Database Size:</strong> <span id="dbSize">0 MB</span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-outline-warning me-2" onclick="runBackup()">
+                                            <i class="fas fa-database me-1"></i>Backup Database
+                                        </button>
+                                        <button class="btn btn-outline-danger" onclick="clearCache()">
+                                            <i class="fas fa-broom me-1"></i>Clear Cache
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Send Notification Modal -->
+    <div class="modal fade" id="sendNotificationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Send Notification</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select User</label>
+                        <select class="form-select" id="notificationUser">
+                            <option value="all">All Users</option>
+                            <!-- Users will be populated here -->
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" id="notificationTitle" placeholder="Enter notification title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" id="notificationMessage" rows="4" placeholder="Enter notification message"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="notificationType">
+                            <option value="info">Information</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-admin" onclick="sendNotification()">Send Notification</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Earnings Breakdown Modal -->
+<div class="modal fade" id="createEarningsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create Earnings Breakdown</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createEarningsForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Select User</label>
+                <select class="form-select" id="earningsUser" required>
+                  <option value="">Select user</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Period</label>
+                <select class="form-select" id="earningsPeriod" required>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="earningsStartDate" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" id="earningsEndDate" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Profit ($)</label>
+                <input type="number" class="form-control" id="earningsProfit" min="0" step="0.01" value="0">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Deposit ($)</label>
+                <input type="number" class="form-control" id="earningsDeposit" min="0" step="0.01" value="0">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Investment ($)</label>
+                <input type="number" class="form-control" id="earningsInvestment" min="0" step="0.01" value="0">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-control" id="earningsNotes" rows="3" placeholder="Add any additional notes..."></textarea>
+          </div>
+          
+          <div class="alert alert-info">
+            <strong>Total Earnings: $<span id="earningsTotal">0.00</span></strong>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-admin" onclick="createEarningsBreakdown()">Create Breakdown</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Earnings Modal -->
+<div class="modal fade" id="bulkEarningsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bulk Create Earnings Breakdown</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="bulkEarningsForm">
+          <div class="mb-3">
+            <label class="form-label">Select Users</label>
+            <select class="form-select" id="bulkEarningsUsers" multiple required>
+              <!-- Users will be populated here -->
+            </select>
+            <small class="text-muted">Hold Ctrl/Cmd to select multiple users</small>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Period</label>
+                <select class="form-select" id="bulkEarningsPeriod" required>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="bulkEarningsStartDate" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">End Date</label>
+                <input type="date" class="form-control" id="bulkEarningsEndDate" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Profit ($)</label>
+                <input type="number" class="form-control" id="bulkEarningsProfit" min="0" step="0.01" value="0">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Deposit ($)</label>
+                <input type="number" class="form-control" id="bulkEarningsDeposit" min="0" step="0.01" value="0">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Investment ($)</label>
+                <input type="number" class="form-control" id="bulkEarningsInvestment" min="0" step="0.01" value="0">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-control" id="bulkEarningsNotes" rows="3" placeholder="Add any additional notes..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-admin" onclick="createBulkEarningsBreakdown()">Create for Selected Users</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Investment Adjustment Modal -->
+<div class="modal fade" id="adjustInvestmentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Adjust User Investment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="adjustInvestmentForm">
+          <div class="mb-3">
+            <label class="form-label">User</label>
+            <div class="form-control" id="adjustUserDisplay" readonly></div>
+            <input type="hidden" id="adjustUserId">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Current Investment</label>
+            <input type="text" class="form-control" id="currentInvestment" readonly>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Action</label>
+            <select class="form-select" id="adjustAction" required>
+              <option value="add">Add to Investment</option>
+              <option value="subtract">Subtract from Investment</option>
+              <option value="set">Set Investment Amount</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Amount ($)</label>
+            <input type="number" class="form-control" id="adjustAmount" min="0" step="0.01" required>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Plan Name (Optional)</label>
+            <input type="text" class="form-control" id="adjustPlanName" placeholder="e.g., Manual Adjustment">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Notes (Optional)</label>
+            <textarea class="form-control" id="adjustNotes" rows="2" placeholder="Add notes for this adjustment..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-admin" onclick="submitInvestmentAdjustment()">Apply Adjustment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Broadcast Modal -->
+    <div class="modal fade" id="broadcastModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Broadcast Message</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" id="broadcastTitle" placeholder="Enter broadcast title">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" id="broadcastMessage" rows="4" placeholder="Enter broadcast message"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" id="broadcastType">
+                            <option value="info">Information</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-admin" onclick="sendBroadcast()">Send Broadcast</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" id="newUsername" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="newEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" id="newPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="newFullName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Initial Balance</label>
+                            <input type="number" class="form-control" id="newBalance" value="0" min="0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-admin" onclick="addNewUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top-Up Modal -->
+<div class="modal fade" id="topupModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Manual Top-Up</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">User</label>
+          <div class="form-control" id="topupUsername" readonly></div>
+          <input type="hidden" id="topupUserId">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Top-Up Type</label>
+          <select class="form-select" id="topupType" onchange="toggleTopUpType()">
+            <option value="deposit">Deposit Top-Up</option>
+            <option value="investment">Investment Top-Up</option>
+          </select>
+        </div>
+        <div class="mb-3" id="investmentPlanGroup">
+          <label class="form-label">Investment Plan</label>
+          <select class="form-select" id="topupPlan">
+            <option value="1">Basic Plan (5% profit)</option>
+            <option value="2">Premium Plan (8% profit)</option>
+            <option value="3">VIP Plan (12% profit)</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Amount</label>
+          <input type="number" class="form-control" id="topupAmount" min="1" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Note (Optional)</label>
+          <textarea class="form-control" id="topupNote" rows="2" placeholder="Add a note for this top-up..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-admin" onclick="submitTopUp()">Process Top-Up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // API Base URL
+        const API_BASE_URL = '/api';
+        
+        // State management
+        let currentAdmin = null;
+        let adminToken = localStorage.getItem('adminToken');
+        let isAdmin = localStorage.getItem('isAdmin') === 'true';
+        let webSocket = null;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
+        let revenueChart = null;
+        let currentTab = 'dashboard';
+
+        // Check if admin is authenticated
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!isAdmin) {
+                window.location.href = 'admin-login.html';
+                return;
+            }
+            
+            // Set admin credentials for API calls
+            setAdminCredentials();
+            
+            // Initialize dashboard
+            initializeDashboard();
+            setupEventListeners();
+            
+            // Initialize WebSocket connection
+            initializeWebSocket();
+            
+            // Set up periodic data refresh
+            setInterval(refreshDashboard, 30000);
+            setInterval(updateSystemUptime, 1000);
+        });
+
+        // Set admin credentials for API calls
+        function setAdminCredentials() {
+            const adminUsername = localStorage.getItem('adminUsername') || 'admin';
+            const adminPassword = localStorage.getItem('adminPassword') || 'admin123';
+            
+            // Set headers for all fetch requests
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                const [resource, config = {}] = args;
+                config.headers = {
+                    ...config.headers,
+                    'Admin-Username': adminUsername,
+                    'Admin-Password': adminPassword
+                };
+                return originalFetch(resource, config);
+            };
+        }
+
+        // Initialize dashboard
+        async function initializeDashboard() {
+            await loadDashboardStats();
+            await loadUsers();
+            await loadTransactions();
+            await loadPendingDeposits();
+            await loadPendingWithdrawals();
+            await loadInvestments();
+            await loadNotifications();
+            initializeRevenueChart();
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Sidebar navigation
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tab = this.getAttribute('data-tab');
+                    switchTab(tab);
+                });
+            });
+            
+            // Logout button
+            document.getElementById('adminLogout').addEventListener('click', handleAdminLogout);
+            
+            // User search
+            document.getElementById('userSearch').addEventListener('input', debounce(searchUsers, 300));
+            
+            // Deposit filter buttons
+            document.querySelectorAll('#depositsTab .btn-group .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#depositsTab .btn-group .btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    loadDeposits(this.getAttribute('data-filter'));
+                });
+            });
+            
+            // Withdrawal filter buttons
+            document.querySelectorAll('#withdrawalsTab .btn-group .btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#withdrawalsTab .btn-group .btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    loadWithdrawals(this.getAttribute('data-filter'));
+                });
+            });
+            
+            // Transaction filters
+            document.getElementById('transactionTypeFilter').addEventListener('change', loadTransactions);
+            document.getElementById('transactionStatusFilter').addEventListener('change', loadTransactions);
+        }
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all sidebar links
+            document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show the selected tab content
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Add active class to the clicked sidebar link
+            document.querySelector(`.sidebar .nav-link[data-tab="${tabName}"]`).classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load specific data for the tab if needed
+            if (tabName === 'users') {
+                loadUsers();
+            } else if (tabName === 'transactions') {
+                loadTransactions();
+            } else if (tabName === 'deposits') {
+                loadDeposits('pending');
+            } else if (tabName === 'withdrawals') {
+                loadWithdrawals('pending');
+            } else if (tabName === 'investments') {
+                loadInvestments();
+            } else if (tabName === 'notifications') {
+                loadNotifications();
+            } else if (tabName === 'system') {
+                loadSystemSettings();
+            }
+        }
+
+        // Initialize WebSocket connection
+        function initializeWebSocket() {
+            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+                return;
+            }
+
+            try {
+                updateAdminConnectionStatus('connecting', 'Connecting...');
+                
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws`;
+                
+                webSocket = new WebSocket(wsUrl);
+                
+                webSocket.onopen = function() {
+                    console.log('✅ Admin WebSocket connected successfully');
+                    reconnectAttempts = 0;
+                    updateAdminConnectionStatus('connected', 'Connected');
+                    
+                    // Send admin authentication
+                    webSocket.send(JSON.stringify({
+                        type: 'ADMIN_AUTH',
+                        username: localStorage.getItem('adminUsername') || 'admin'
+                    }));
+                };
+                
+                webSocket.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        console.log('📨 Admin WebSocket message received:', data);
+                        handleAdminWebSocketMessage(data);
+                    } catch (error) {
+                        console.error('❌ Error parsing admin WebSocket message:', error);
+                    }
+                };
+                
+                webSocket.onclose = function(event) {
+                    console.log('❌ Admin WebSocket disconnected:', event.code, event.reason);
+                    updateAdminConnectionStatus('disconnected', 'Disconnected');
+                    
+                    // Attempt reconnection
+                    if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+                        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
+                        console.log(`🔄 Admin reconnection attempt ${reconnectAttempts + 1} in ${delay}ms`);
+                        
+                        setTimeout(() => {
+                            reconnectAttempts++;
+                            initializeWebSocket();
+                        }, delay);
+                    } else {
+                        console.error('❌ Max admin reconnection attempts reached');
+                        updateAdminConnectionStatus('error', 'Connection failed');
+                    }
+                };
+                
+                webSocket.onerror = function(error) {
+                    console.error('❌ Admin WebSocket error:', error);
+                    updateAdminConnectionStatus('error', 'Connection error');
+                };
+                
+            } catch (error) {
+                console.error('❌ Error initializing admin WebSocket:', error);
+                updateAdminConnectionStatus('error', 'Connection failed');
+            }
+        }
+
+        function updateAdminConnectionStatus(status, message) {
+            const statusElement = document.getElementById('adminConnectionStatus');
+            const indicator = document.getElementById('adminConnectionIndicator');
+            
+            statusElement.textContent = message;
+            
+            indicator.className = `status-indicator ${
+                status === 'connected' ? 'status-connected' : 
+                status === 'connecting' ? 'status-connecting' : 
+                'status-disconnected'
+            }`;
+        }
+
+        function handleAdminWebSocketMessage(data) {
+            switch (data.type) {
+                case 'ADMIN_CONNECTED':
+                    updateAdminConnectionStatus('connected', 'Connected');
+                    showToast('Admin Connected', 'Real-time updates active', 'success');
+                    break;
+                    
+                case 'USER_REGISTERED':
+                    refreshDashboard();
+                    addRecentActivity('New user registered', `User ${data.user.username} joined`, 'user-plus');
+                    showToast('New User', `User ${data.user.username} registered`, 'info');
+                    break;
+                    
+                case 'DEPOSIT_SUBMITTED':
+                    refreshDashboard();
+                    loadPendingDeposits();
+                    addRecentActivity('New deposit submitted', `$${data.amount} deposit pending`, 'money-bill-wave');
+                    break;
+                    
+                case 'WITHDRAWAL_SUBMITTED':
+                    refreshDashboard();
+                    loadPendingWithdrawals();
+                    addRecentActivity('New withdrawal requested', `$${data.amount} withdrawal pending`, 'wallet');
+                    break;
+                    
+                case 'INVESTMENT_CREATED':
+                    refreshDashboard();
+                    addRecentActivity('New investment created', `$${data.amount} investment submitted`, 'chart-line');
+                    break;
+                    
+                default:
+                    console.log('Unhandled admin WebSocket message type:', data.type);
+            }
+        }
+
+        // Load dashboard statistics
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/dashboard-stats`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const stats = result.data;
+                    
+                    // Update statistics cards
+                    document.getElementById('totalUsers').textContent = stats.totalUsers;
+                    document.getElementById('totalDeposits').textContent = stats.totalDeposits.toLocaleString();
+                    document.getElementById('totalWithdrawals').textContent = stats.totalWithdrawals.toLocaleString();
+                    document.getElementById('totalInvestments').textContent = stats.totalInvestments.toLocaleString();
+                    
+                    // Update pending counts
+                    document.getElementById('pendingDepositsCount').textContent = `${stats.pendingTransactions.deposits} pending`;
+                    document.getElementById('pendingWithdrawalsCount').textContent = `${stats.pendingTransactions.withdrawals} pending`;
+                    document.getElementById('activeInvestmentsCount').textContent = `${stats.pendingTransactions.investments || 0} active`;
+                    
+                    // Update quick action counts
+                    document.getElementById('quickDepositsCount').textContent = stats.pendingTransactions.deposits;
+                    document.getElementById('quickWithdrawalsCount').textContent = stats.pendingTransactions.withdrawals;
+                    document.getElementById('quickNewUsersCount').textContent = stats.recentRegistrations.length;
+                    
+                    // Update online users
+                    document.getElementById('onlineUsers').textContent = `${stats.onlineUsers || 0} online`;
+                    
+                    // Update notification badges
+                    updateNotificationBadges(stats.pendingTransactions.deposits, stats.pendingTransactions.withdrawals);
+                    
+                    // Update last sync time
+                    document.getElementById('lastSync').textContent = `Last sync: ${new Date().toLocaleTimeString()}`;
+                }
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        // Update notification badges
+        function updateNotificationBadges(pendingDeposits, pendingWithdrawals) {
+            const depositsBadge = document.getElementById('pendingDepositsBadge');
+            const withdrawalsBadge = document.getElementById('pendingWithdrawalsBadge');
+            
+            if (pendingDeposits > 0) {
+                depositsBadge.textContent = pendingDeposits;
+                depositsBadge.classList.remove('d-none');
+            } else {
+                depositsBadge.classList.add('d-none');
+            }
+            
+            if (pendingWithdrawals > 0) {
+                withdrawalsBadge.textContent = pendingWithdrawals;
+                withdrawalsBadge.classList.remove('d-none');
+            } else {
+                withdrawalsBadge.classList.add('d-none');
+            }
+        }
+
+        // Load users
+        async function loadUsers(page = 1, search = '') {
+            try {
+                let url = `${API_BASE_URL}/admin/users?page=${page}&limit=10`;
+                if (search) {
+                    url += `&search=${encodeURIComponent(search)}`;
+                }
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayUsers(result.data.users);
+                    setupUsersPagination(result.data.pagination, search);
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Display users in table
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-users fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No users found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            users.forEach(user => {
+                const avatarText = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+                const statusBadge = user.isBlocked ? 
+                    '<span class="badge bg-danger">Blocked</span>' : 
+                    '<span class="badge bg-success">Active</span>';
+                
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-3">${avatarText}</div>
+                                <div>
+                                    <div class="fw-bold">${user.username}</div>
+                                    <small class="text-muted">${user.name || 'N/A'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${user.email}</td>
+                        <td>
+                            <small>${user.location?.country || 'Unknown'}</small>
+                        </td>
+                        <td>
+                            <div>$${user.walletBalance?.toFixed(2) || '0.00'}</div>
+                            <small class="text-muted">Wallet</small>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewUser('${user._id}')" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="editUser('${user._id}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                ${user.isBlocked ? 
+                                    `<button class="btn btn-sm btn-outline-success" onclick="toggleUserBlock('${user._id}', false)" title="Unblock">
+                                        <i class="fas fa-check"></i>
+                                    </button>` :
+                                    `<button class="btn btn-sm btn-outline-danger" onclick="toggleUserBlock('${user._id}', true)" title="Block">
+                                        <i class="fas fa-ban"></i>
+                                    </button>`
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            document.getElementById('usersTableInfo').textContent = `Showing ${users.length} users`;
+        }
+
+        // Setup users pagination
+        function setupUsersPagination(pagination, search) {
+            const paginationEl = document.getElementById('usersPagination');
+            paginationEl.innerHTML = '';
+            
+            const { page, pages, total } = pagination;
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${page === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" onclick="loadUsers(${page - 1}, '${search}')">Previous</a>`;
+            paginationEl.appendChild(prevLi);
+            
+            // Page numbers
+            for (let i = 1; i <= pages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === page ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" onclick="loadUsers(${i}, '${search}')">${i}</a>`;
+                paginationEl.appendChild(li);
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${page === pages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" onclick="loadUsers(${page + 1}, '${search}')">Next</a>`;
+            paginationEl.appendChild(nextLi);
+        }
+
+        // Search users with debounce
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function searchUsers() {
+            const query = document.getElementById('userSearch').value;
+            loadUsers(1, query);
+        }
+
+        // Load transactions
+        async function loadTransactions() {
+            try {
+                const type = document.getElementById('transactionTypeFilter').value;
+                const status = document.getElementById('transactionStatusFilter').value;
+                
+                let url = `${API_BASE_URL}/admin/transactions?limit=20`;
+                if (type !== 'all') url += `&type=${type}`;
+                if (status !== 'all') url += `&status=${status}`;
+                
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayTransactions(result.data.transactions);
+                }
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+            }
+        }
+
+        // Display transactions
+        function displayTransactions(transactions) {
+            const tbody = document.getElementById('transactionsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-exchange-alt fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No transactions found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            transactions.forEach(transaction => {
+                const statusClass = `badge-${transaction.status}`;
+                const typeIcon = getTransactionTypeIcon(transaction.type);
+                
+                const row = `
+                    <tr>
+                        <td><small>${transaction._id.substring(0, 8)}...</small></td>
+                        <td>
+                            <div class="fw-bold">${transaction.user?.username || 'N/A'}</div>
+                            <small class="text-muted">${transaction.user?.email || ''}</small>
+                        </td>
+                        <td>
+                            <div>${typeIcon} ${transaction.type}</div>
+                            <small class="text-muted">${transaction.investmentPlan || ''}</small>
+                        </td>
+                        <td class="fw-bold">$${transaction.amount.toFixed(2)}</td>
+                        <td><span class="badge ${statusClass}">${transaction.status}</span></td>
+                        <td>${new Date(transaction.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewTransaction('${transaction._id}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                ${transaction.status === 'pending' && transaction.type === 'deposit' ? 
+                                    `<button class="btn btn-sm btn-outline-success" onclick="approveDeposit('${transaction._id}')">
+                                        <i class="fas fa-check"></i>
+                                    </button>` : ''
+                                }
+                                ${transaction.status === 'pending' && transaction.type === 'withdrawal' ? 
+                                    `<button class="btn btn-sm btn-outline-success" onclick="approveWithdrawal('${transaction._id}')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="rejectWithdrawal('${transaction._id}')">
+                                        <i class="fas fa-times"></i>
+                                    </button>` : ''
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            document.getElementById('transactionsTableInfo').textContent = `Showing ${transactions.length} transactions`;
+        }
+
+        function getTransactionTypeIcon(type) {
+            const icons = {
+                'deposit': '💰',
+                'withdrawal': '💸',
+                'investment': '📈',
+                'profit': '🎯'
+            };
+            return icons[type] || '📄';
+        }
+
+        // Load pending deposits
+        async function loadPendingDeposits(filter = 'pending') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/pending-deposits`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    let deposits = result.data.deposits;
+                    
+                    // Filter deposits based on selected filter
+                    if (filter !== 'all') {
+                        deposits = deposits.filter(d => d.status === filter);
+                    }
+                    
+                    displayDeposits(deposits);
+                }
+            } catch (error) {
+                console.error('Error loading pending deposits:', error);
+            }
+        }
+
+        // Display deposits
+        function displayDeposits(deposits) {
+            const tbody = document.getElementById('depositsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!deposits || deposits.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-money-bill-wave fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No deposits found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            deposits.forEach(deposit => {
+                const statusClass = `badge-${deposit.status}`;
+                
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${deposit.user?.username || 'N/A'}</div>
+                            <small class="text-muted">${deposit.user?.email || ''}</small>
+                        </td>
+                        <td class="fw-bold">$${deposit.amount.toFixed(2)}</td>
+                        <td>${deposit.walletAddress || 'N/A'}</td>
+                        <td>
+                            ${deposit.proof ? 
+                                `<a href="${API_BASE_URL}/uploads/${deposit.proof}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View Proof
+                                </a>` : 
+                                'No proof'
+                            }
+                        </td>
+                        <td><span class="badge ${statusClass}">${deposit.status}</span></td>
+                        <td>${new Date(deposit.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <div class="action-buttons">
+                                ${deposit.status === 'pending' ? 
+                                    `<button class="btn btn-sm btn-outline-success" onclick="approveDeposit('${deposit._id}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="rejectDeposit('${deposit._id}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>` : 
+                                    '<span class="text-muted">Processed</span>'
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Load pending withdrawals
+        async function loadPendingWithdrawals(filter = 'pending') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/transactions?type=withdrawal`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    let withdrawals = result.data.transactions;
+                    
+                    // Filter withdrawals based on selected filter
+                    if (filter !== 'all') {
+                        withdrawals = withdrawals.filter(w => w.status === filter);
+                    }
+                    
+                    displayWithdrawals(withdrawals);
+                }
+            } catch (error) {
+                console.error('Error loading pending withdrawals:', error);
+            }
+        }
+
+        // Display withdrawals
+        function displayWithdrawals(withdrawals) {
+            const tbody = document.getElementById('withdrawalsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!withdrawals || withdrawals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="fas fa-wallet fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No withdrawals found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            withdrawals.forEach(withdrawal => {
+                const statusClass = `badge-${withdrawal.status}`;
+                
+                const row = `
+                    <tr>
+                        <td>
+                            <div class="fw-bold">${withdrawal.user?.username || 'N/A'}</div>
+                            <small class="text-muted">${withdrawal.user?.email || ''}</small>
+                        </td>
+                        <td class="fw-bold">$${withdrawal.amount.toFixed(2)}</td>
+                        <td>${withdrawal.walletAddress ? withdrawal.walletAddress.split(':')[0] : 'N/A'}</td>
+                        <td><small>${withdrawal.walletAddress || 'N/A'}</small></td>
+                        <td><span class="badge ${statusClass}">${withdrawal.status}</span></td>
+                        <td>${new Date(withdrawal.createdAt).toLocaleDateString()}</td>
+                        <td>
+                            <div class="action-buttons">
+                                ${withdrawal.status === 'pending' ? 
+                                    `<button class="btn btn-sm btn-outline-success" onclick="approveWithdrawal('${withdrawal._id}')">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="rejectWithdrawal('${withdrawal._id}')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>` : 
+                                    '<span class="text-muted">Processed</span>'
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Load investments
+        async function loadInvestments() {
+            try {
+                // This would typically come from your backend
+                // For now, we'll simulate it
+                const investments = [];
+                displayInvestments(investments);
+            } catch (error) {
+                console.error('Error loading investments:', error);
+            }
+        }
+
+        // Display investments
+        function displayInvestments(investments) {
+            const tbody = document.getElementById('investmentsTableBody');
+            tbody.innerHTML = '';
+            
+            if (!investments || investments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                            <p class="text-muted">No investments found</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Implementation for displaying investments would go here
+        }
+
+        // Load notifications
+        async function loadNotifications() {
+            try {
+                // This would typically come from your backend
+                // For now, we'll simulate it
+                const notifications = [];
+                displayNotifications(notifications);
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // Display notifications
+        function displayNotifications(notifications) {
+            const container = document.getElementById('notificationsList');
+            
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-bell fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">No notifications sent yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Implementation for displaying notifications would go here
+        }
+
+        // Initialize revenue chart
+        function initializeRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000],
+                        borderColor: '#8e44ad',
+                        backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add recent activity
+        function addRecentActivity(title, description, icon) {
+            const activityList = document.getElementById('recentActivity');
+            const activityItem = `
+                <li>
+                    <div class="activity-icon">
+                        <i class="fas fa-${icon}"></i>
+                    </div>
+                    <div>
+                        <div>${title}</div>
+                        <small class="text-muted">${description} • Just now</small>
+                    </div>
+                </li>
+            `;
+            
+            activityList.insertAdjacentHTML('afterbegin', activityItem);
+            
+            // Keep only the last 5 activities
+            const items = activityList.querySelectorAll('li');
+            if (items.length > 5) {
+                items[items.length - 1].remove();
+            }
+        }
+
+        // Show toast notification
+        function showToast(title, message, type = 'info') {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.getElementById('toastContainer');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toastContainer';
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                toastContainer.style.zIndex = '9999';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-bg-${type} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <strong>${title}</strong><br>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+            toast.show();
+
+            // Remove toast from DOM after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            loadDashboardStats();
+            if (currentTab === 'users') loadUsers();
+            if (currentTab === 'transactions') loadTransactions();
+            if (currentTab === 'deposits') loadPendingDeposits();
+            if (currentTab === 'withdrawals') loadPendingWithdrawals();
+            if (currentTab === 'investments') loadInvestments();
+            if (currentTab === 'notifications') loadNotifications();
+            
+            showToast('Dashboard Updated', 'All data has been refreshed', 'info');
+        }
+
+        // Update system uptime
+        function updateSystemUptime() {
+            const startTime = Date.now() - (Math.random() * 86400000); // Random start time for demo
+            const uptime = Date.now() - startTime;
+            
+            const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
+            
+            document.getElementById('systemUptime').textContent = 
+                `${days} days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Handle admin logout
+        function handleAdminLogout(e) {
+            e.preventDefault();
+            
+            // Close WebSocket connection if open
+            if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+                webSocket.close(1000, 'Admin logged out');
+            }
+            
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUsername');
+            localStorage.removeItem('adminPassword');
+            
+            window.location.href = 'admin-login.html';
+        }
+
+        // Admin action functions
+        async function approveDeposit(transactionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/deposit/${transactionId}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminNote: 'Deposit approved by admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Deposit Approved', `Deposit of $${result.data.transaction.amount} has been approved`, 'success');
+                    refreshDashboard();
+                    loadPendingDeposits();
+                } else {
+                    showToast('Approval Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error approving deposit:', error);
+                showToast('Error', 'Failed to approve deposit', 'error');
+            }
+        }
+
+        async function approveWithdrawal(transactionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/withdrawal/${transactionId}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminNote: 'Withdrawal approved by admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Withdrawal Approved', `Withdrawal of $${result.data.transaction.amount} has been approved`, 'success');
+                    refreshDashboard();
+                    loadPendingWithdrawals();
+                } else {
+                    showToast('Approval Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error approving withdrawal:', error);
+                showToast('Error', 'Failed to approve withdrawal', 'error');
+            }
+        }
+
+        async function rejectWithdrawal(transactionId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/withdrawal/${transactionId}/reject`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        adminNote: 'Withdrawal rejected by admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Withdrawal Rejected', 'Withdrawal request has been rejected', 'warning');
+                    refreshDashboard();
+                    loadPendingWithdrawals();
+                } else {
+                    showToast('Rejection Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error rejecting withdrawal:', error);
+                showToast('Error', 'Failed to reject withdrawal', 'error');
+            }
+        }
+
+        async function toggleUserBlock(userId, block) {
+            try {
+                const endpoint = block ? 'block' : 'unblock';
+                const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/${endpoint}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: block ? 'Account suspended by admin' : 'Account reactivated by admin'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const action = block ? 'blocked' : 'unblocked';
+                    showToast(`User ${action}`, `User has been ${action} successfully`, 'success');
+                    loadUsers();
+                } else {
+                    showToast('Action Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling user block:', error);
+                showToast('Error', 'Failed to update user status', 'error');
+            }
+        }
+
+        async function sendNotification() {
+            const userId = document.getElementById('notificationUser').value;
+            const title = document.getElementById('notificationTitle').value;
+            const message = document.getElementById('notificationMessage').value;
+            const type = document.getElementById('notificationType').value;
+            
+            if (!title || !message) {
+                showToast('Validation Error', 'Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/notify-user`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId === 'all' ? null : userId,
+                        title,
+                        content: message,
+                        type
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Notification Sent', 'Notification has been sent successfully', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('sendNotificationModal')).hide();
+                    document.getElementById('notificationTitle').value = '';
+                    document.getElementById('notificationMessage').value = '';
+                } else {
+                    showToast('Send Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                showToast('Error', 'Failed to send notification', 'error');
+            }
+        }
+
+        async function sendBroadcast() {
+            const title = document.getElementById('broadcastTitle').value;
+            const message = document.getElementById('broadcastMessage').value;
+            const type = document.getElementById('broadcastType').value;
+            
+            if (!title || !message) {
+                showToast('Validation Error', 'Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/notify-all`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title,
+                        content: message,
+                        type
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Broadcast Sent', `Message sent to ${result.data.sentCount} users`, 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('broadcastModal')).hide();
+                    document.getElementById('broadcastTitle').value = '';
+                    document.getElementById('broadcastMessage').value = '';
+                } else {
+                    showToast('Send Failed', result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending broadcast:', error);
+                showToast('Error', 'Failed to send broadcast', 'error');
+            }
+        }
+
+        // Quick action functions
+        function showPendingDeposits() {
+            switchTab('deposits');
+        }
+
+        function showPendingWithdrawals() {
+            switchTab('withdrawals');
+        }
+
+        function showRecentUsers() {
+            switchTab('users');
+        }
+
+        function distributeProfits() {
+            showToast('Feature Coming Soon', 'Profit distribution feature will be available soon', 'info');
+        }
+
+        // Placeholder functions for future implementation
+        function viewUser(userId) {
+            showToast('User Details', `Viewing details for user ${userId}`, 'info');
+        }
+
+        function editUser(userId) {
+            showToast('Edit User', `Editing user ${userId}`, 'info');
+        }
+
+        function viewTransaction(transactionId) {
+            showToast('Transaction Details', `Viewing details for transaction ${transactionId}`, 'info');
+        }
+
+        function rejectDeposit(transactionId) {
+            showToast('Feature Coming Soon', 'Deposit rejection feature will be available soon', 'info');
+        }
+
+        function loadSystemSettings() {
+            // Implementation for loading system settings
+        }
+
+        function saveSystemSettings() {
+            showToast('Settings Saved', 'System settings have been updated', 'success');
+        }
+
+        function useTemplate(template) {
+            const templates = {
+                'welcome': {
+                    title: 'Welcome to Our Platform!',
+                    message: 'Thank you for joining us. We are excited to have you on board and look forward to helping you achieve your financial goals.'
+                },
+                'deposit_approved': {
+                    title: 'Deposit Approved ✅',
+                    message: 'Your deposit has been approved and the funds have been added to your account balance.'
+                },
+                'withdrawal_processed': {
+                    title: 'Withdrawal Processed',
+                    message: 'Your withdrawal request has been processed and the funds have been sent to your wallet.'
+                },
+                'profit_added': {
+                    title: 'Profit Added 🎯',
+                    message: 'Congratulations! Your investment has generated profits that have been added to your wallet balance.'
+                }
+            };
+            
+            const templateData = templates[template];
+            if (templateData) {
+                document.getElementById('notificationTitle').value = templateData.title;
+                document.getElementById('notificationMessage').value = templateData.message;
+                document.getElementById('broadcastTitle').value = templateData.title;
+                document.getElementById('broadcastMessage').value = templateData.message;
+            }
+        }
+
+        function exportData() {
+            showToast('Export Started', 'Your data export has been initiated', 'info');
+        }
+
+        function showSystemStats() {
+            showToast('System Statistics', 'Displaying system performance metrics', 'info');
+        }
+
+        function broadcastNotification() {
+            bootstrap.Modal.getInstance(document.getElementById('broadcastModal')).show();
+        }
+
+        function runBackup() {
+            showToast('Backup Initiated', 'Database backup has been started', 'info');
+        }
+
+        function clearCache() {
+            showToast('Cache Cleared', 'System cache has been cleared', 'success');
+        }
+
+        function addNewUser() {
+            showToast('User Added', 'New user has been created successfully', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+        }
+
+
+
+        // Enhanced investment management functions
+async function loadPendingInvestments() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/pending-investments`);
+    const result = await response.json();
+    
+    if (result.success) {
+      displayPendingInvestments(result.data.investments);
+    }
+  } catch (error) {
+    console.error('Error loading pending investments:', error);
+  }
+}
+
+function displayPendingInvestments(investments) {
+  const tbody = document.getElementById('investmentsTableBody');
+  tbody.innerHTML = '';
+  
+  if (!investments || investments.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-4">
+          <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+          <p class="text-muted">No pending investments found</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  investments.forEach(investment => {
+    const row = `
+      <tr>
+        <td>
+          <div class="fw-bold">${investment.user?.username || 'N/A'}</div>
+          <small class="text-muted">${investment.user?.email || ''}</small>
+        </td>
+        <td>${investment.investmentPlan || 'N/A'}</td>
+        <td class="fw-bold">$${investment.amount.toFixed(2)}</td>
+        <td>${getProfitRateForPlan(investment.investmentPlan)}%</td>
+        <td>$0.00</td>
+        <td><span class="badge badge-pending">Pending</span></td>
+        <td>${new Date(investment.createdAt).toLocaleDateString()}</td>
+        <td>N/A</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-success" onclick="approveInvestment('${investment._id}')">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="rejectInvestment('${investment._id}')">
+              <i class="fas fa-times"></i> Reject
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+}
+
+function getProfitRateForPlan(planName) {
+  const plans = {
+    'Basic Plan': 5,
+    'Premium Plan': 8,
+    'VIP Plan': 12
+  };
+  return plans[planName] || 0;
+}
+
+async function approveInvestment(transactionId) {
+  if (!confirm('Are you sure you want to approve this investment?')) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/investment/${transactionId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminNote: 'Investment approved by admin'
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Investment Approved', `Investment of $${result.data.transaction.amount} has been approved`, 'success');
+      loadPendingInvestments();
+      refreshDashboard();
+    } else {
+      showToast('Approval Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Error approving investment:', error);
+    showToast('Error', 'Failed to approve investment', 'error');
+  }
+}
+
+async function rejectInvestment(transactionId) {
+  const reason = prompt('Please enter reason for rejection:');
+  if (reason === null) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/investment/${transactionId}/reject`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminNote: reason
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Investment Rejected', 'Investment request has been rejected', 'warning');
+      loadPendingInvestments();
+    } else {
+      showToast('Rejection Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Error rejecting investment:', error);
+    showToast('Error', 'Failed to reject investment', 'error');
+  }
+}
+
+// Manual top-up functions
+function openDepositTopUpModal(userId, username) {
+  document.getElementById('topupUserId').value = userId;
+  document.getElementById('topupUsername').textContent = username;
+  document.getElementById('topupType').value = 'deposit';
+  document.getElementById('investmentPlanGroup').classList.add('d-none');
+  
+  const modal = new bootstrap.Modal(document.getElementById('topupModal'));
+  modal.show();
+}
+
+function openInvestmentTopUpModal(userId, username) {
+  document.getElementById('topupUserId').value = userId;
+  document.getElementById('topupUsername').textContent = username;
+  document.getElementById('topupType').value = 'investment';
+  document.getElementById('investmentPlanGroup').classList.remove('d-none');
+  
+  const modal = new bootstrap.Modal(document.getElementById('topupModal'));
+  modal.show();
+}
+
+async function submitTopUp() {
+  const userId = document.getElementById('topupUserId').value;
+  const amount = document.getElementById('topupAmount').value;
+  const note = document.getElementById('topupNote').value;
+  const type = document.getElementById('topupType').value;
+  const planId = document.getElementById('topupPlan').value;
+  
+  if (!amount || amount <= 0) {
+    showToast('Validation Error', 'Please enter a valid amount', 'error');
+    return;
+  }
+  
+  if (type === 'investment' && !planId) {
+    showToast('Validation Error', 'Please select an investment plan', 'error');
+    return;
+  }
+  
+  try {
+    const endpoint = type === 'deposit' ? 'topup-deposit' : 'topup-investment';
+    const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: parseFloat(amount),
+        planId: planId,
+        note: note
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Top-Up Successful', result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('topupModal')).hide();
+      document.getElementById('topupForm').reset();
+      
+      // Refresh user data and relevant sections
+      refreshDashboard();
+      if (currentTab === 'users') loadUsers();
+      if (currentTab === 'investments') loadPendingInvestments();
+    } else {
+      showToast('Top-Up Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Top-up error:', error);
+    showToast('Error', 'Failed to process top-up', 'error');
+  }
+}
+
+// Update user table to include top-up buttons
+function displayUsers(users) {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" class="text-center py-4">
+          <i class="fas fa-users fa-2x text-muted mb-2"></i>
+          <p class="text-muted">No users found</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  users.forEach(user => {
+    const avatarText = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+    const statusBadge = user.isBlocked ? 
+      '<span class="badge bg-danger">Blocked</span>' : 
+      '<span class="badge bg-success">Active</span>';
+    
+    const row = `
+      <tr>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">${avatarText}</div>
+            <div>
+              <div class="fw-bold">${user.username}</div>
+              <small class="text-muted">${user.name || 'N/A'}</small>
+            </div>
+          </div>
+        </td>
+        <td>${user.email}</td>
+        <td>
+          <small>${user.location?.country || 'Unknown'}</small>
+        </td>
+        <td>
+          <div>$${user.walletBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Wallet</small>
+        </td>
+        <td>
+          <div>$${user.depositBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Deposit</small>
+        </td>
+        <td>
+          <div>$${user.totalInvested?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Invested</small>
+        </td>
+        <td>${statusBadge}</td>
+        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-primary" onclick="viewUser('${user._id}')" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-warning" onclick="editUser('${user._id}')" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Top-Up">
+                <i class="fas fa-plus"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="openDepositTopUpModal('${user._id}', '${user.username}')">Top-Up Deposit</a></li>
+                <li><a class="dropdown-item" href="#" onclick="openInvestmentTopUpModal('${user._id}', '${user.username}')">Top-Up Investment</a></li>
+              </ul>
+            </div>
+            ${user.isBlocked ? 
+              `<button class="btn btn-sm btn-outline-success" onclick="toggleUserBlock('${user._id}', false)" title="Unblock">
+                <i class="fas fa-check"></i>
+              </button>` :
+              `<button class="btn btn-sm btn-outline-danger" onclick="toggleUserBlock('${user._id}', true)" title="Block">
+                <i class="fas fa-ban"></i>
+              </button>`
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+  
+  document.getElementById('usersTableInfo').textContent = `Showing ${users.length} users`;
+}
+
+
+function toggleTopUpType() {
+  const type = document.getElementById('topupType').value;
+  const planGroup = document.getElementById('investmentPlanGroup');
+  
+  if (type === 'investment') {
+    planGroup.classList.remove('d-none');
+  } else {
+    planGroup.classList.add('d-none');
+  }
+}
+
+// Update the switchTab function to load investments when investments tab is clicked
+function switchTab(tabName) {
+  // ... existing code ...
+  
+  if (tabName === 'investments') {
+    loadPendingInvestments();
+  }
+  
+  // ... existing code ...
+}
+
+
+// Investment adjustment functions
+function openAdjustInvestmentModal(userId, username, currentInvestment) {
+  document.getElementById('adjustUserId').value = userId;
+  document.getElementById('adjustUserDisplay').textContent = username;
+  document.getElementById('currentInvestment').value = `$${currentInvestment.toFixed(2)}`;
+  
+  const modal = new bootstrap.Modal(document.getElementById('adjustInvestmentModal'));
+  modal.show();
+}
+
+async function submitInvestmentAdjustment() {
+  const userId = document.getElementById('adjustUserId').value;
+  const action = document.getElementById('adjustAction').value;
+  const amount = document.getElementById('adjustAmount').value;
+  const planName = document.getElementById('adjustPlanName').value;
+  const notes = document.getElementById('adjustNotes').value;
+  
+  if (!amount || amount <= 0) {
+    showToast('Validation Error', 'Please enter a valid amount', 'error');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/adjust-investment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: parseFloat(amount),
+        action: action,
+        planName: planName,
+        note: notes
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Investment Adjusted', result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('adjustInvestmentModal')).hide();
+      document.getElementById('adjustInvestmentForm').reset();
+      
+      // Refresh user data
+      loadUsers();
+    } else {
+      showToast('Adjustment Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Investment adjustment error:', error);
+    showToast('Error', 'Failed to adjust investment', 'error');
+  }
+}
+
+// Earnings breakdown functions
+async function loadEarningsBreakdowns() {
+  try {
+    // This would typically load from your backend
+    // For now, we'll simulate it
+    showToast('Info', 'Earnings breakdown feature loaded', 'info');
+  } catch (error) {
+    console.error('Error loading earnings breakdowns:', error);
+  }
+}
+
+async function createEarningsBreakdown() {
+  const userId = document.getElementById('earningsUser').value;
+  const period = document.getElementById('earningsPeriod').value;
+  const startDate = document.getElementById('earningsStartDate').value;
+  const endDate = document.getElementById('earningsEndDate').value;
+  const profit = document.getElementById('earningsProfit').value || 0;
+  const deposit = document.getElementById('earningsDeposit').value || 0;
+  const investment = document.getElementById('earningsInvestment').value || 0;
+  const notes = document.getElementById('earningsNotes').value;
+  
+  if (!userId || !startDate || !endDate) {
+    showToast('Validation Error', 'Please fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/user/${userId}/earnings-breakdown`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        period,
+        startDate,
+        endDate,
+        profit,
+        deposit,
+        investment,
+        notes
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Earnings Breakdown Created', result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('createEarningsModal')).hide();
+      document.getElementById('createEarningsForm').reset();
+      
+      // Refresh earnings table
+      loadEarningsBreakdowns();
+    } else {
+      showToast('Creation Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Earnings breakdown creation error:', error);
+    showToast('Error', 'Failed to create earnings breakdown', 'error');
+  }
+}
+
+async function createBulkEarningsBreakdown() {
+  const users = Array.from(document.getElementById('bulkEarningsUsers').selectedOptions).map(opt => opt.value);
+  const period = document.getElementById('bulkEarningsPeriod').value;
+  const startDate = document.getElementById('bulkEarningsStartDate').value;
+  const endDate = document.getElementById('bulkEarningsEndDate').value;
+  const profit = document.getElementById('bulkEarningsProfit').value || 0;
+  const deposit = document.getElementById('bulkEarningsDeposit').value || 0;
+  const investment = document.getElementById('bulkEarningsInvestment').value || 0;
+  const notes = document.getElementById('bulkEarningsNotes').value;
+  
+  if (users.length === 0 || !startDate || !endDate) {
+    showToast('Validation Error', 'Please select users and fill in all required fields', 'error');
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/bulk-earnings-breakdown`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        users,
+        period,
+        startDate,
+        endDate,
+        profit,
+        deposit,
+        investment,
+        notes
+      })
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      showToast('Bulk Earnings Created', result.message, 'success');
+      bootstrap.Modal.getInstance(document.getElementById('bulkEarningsModal')).hide();
+      document.getElementById('bulkEarningsForm').reset();
+      
+      // Refresh earnings table
+      loadEarningsBreakdowns();
+    } else {
+      showToast('Creation Failed', result.message, 'error');
+    }
+  } catch (error) {
+    console.error('Bulk earnings creation error:', error);
+    showToast('Error', 'Failed to create bulk earnings breakdown', 'error');
+  }
+}
+
+// Update the switchTab function to include new tabs
+function switchTab(tabName) {
+  // ... existing code ...
+  
+  if (tabName === 'earnings') {
+    loadEarningsBreakdowns();
+  } else if (tabName === 'reports') {
+    loadTransactionReports();
+  }
+  
+  // ... existing code ...
+}
+
+// Update user table to include investment adjustment button
+function displayUsers(users) {
+  const tbody = document.getElementById('usersTableBody');
+  tbody.innerHTML = '';
+  
+  if (!users || users.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-4">
+          <i class="fas fa-users fa-2x text-muted mb-2"></i>
+          <p class="text-muted">No users found</p>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
+  users.forEach(user => {
+    const avatarText = user.username ? user.username.charAt(0).toUpperCase() : 'U';
+    const statusBadge = user.isBlocked ? 
+      '<span class="badge bg-danger">Blocked</span>' : 
+      '<span class="badge bg-success">Active</span>';
+    
+    const row = `
+      <tr>
+        <td>
+          <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">${avatarText}</div>
+            <div>
+              <div class="fw-bold">${user.username}</div>
+              <small class="text-muted">${user.name || 'N/A'}</small>
+            </div>
+          </div>
+        </td>
+        <td>${user.email}</td>
+        <td>
+          <small>${user.location?.country || 'Unknown'}</small>
+        </td>
+        <td>
+          <div>$${user.walletBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Wallet</small>
+        </td>
+        <td>
+          <div>$${user.depositBalance?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Deposit</small>
+        </td>
+        <td>
+          <div>$${user.totalInvested?.toFixed(2) || '0.00'}</div>
+          <small class="text-muted">Invested</small>
+        </td>
+        <td>${statusBadge}</td>
+        <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-outline-primary" onclick="viewUser('${user._id}')" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-warning" onclick="editUser('${user._id}')" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <div class="dropdown d-inline-block">
+              <button class="btn btn-sm btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Top-Up">
+                <i class="fas fa-plus"></i>
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="openDepositTopUpModal('${user._id}', '${user.username}')">Top-Up Deposit</a></li>
+                <li><a class="dropdown-item" href="#" onclick="openInvestmentTopUpModal('${user._id}', '${user.username}')">Top-Up Investment</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" onclick="openAdjustInvestmentModal('${user._id}', '${user.username}', ${user.totalInvested || 0})">Adjust Investment</a></li>
+              </ul>
+            </div>
+            ${user.isBlocked ? 
+              `<button class="btn btn-sm btn-outline-success" onclick="toggleUserBlock('${user._id}', false)" title="Unblock">
+                <i class="fas fa-check"></i>
+              </button>` :
+              `<button class="btn btn-sm btn-outline-danger" onclick="toggleUserBlock('${user._id}', true)" title="Block">
+                <i class="fas fa-ban"></i>
+              </button>`
+            }
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.innerHTML += row;
+  });
+  
+  document.getElementById('usersTableInfo').textContent = `Showing ${users.length} users`;
+}
+
+// Calculate earnings total in real-time
+document.addEventListener('DOMContentLoaded', function() {
+  const calculateEarningsTotal = () => {
+    const profit = parseFloat(document.getElementById('earningsProfit').value) || 0;
+    const deposit = parseFloat(document.getElementById('earningsDeposit').value) || 0;
+    const investment = parseFloat(document.getElementById('earningsInvestment').value) || 0;
+    const total = profit + deposit + investment;
+    document.getElementById('earningsTotal').textContent = total.toFixed(2);
+  };
+
+  // Add event listeners for earnings calculation
+  ['earningsProfit', 'earningsDeposit', 'earningsInvestment'].forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', calculateEarningsTotal);
+    }
+  });
+});
+
+    </script>
+</body>
+</html>
