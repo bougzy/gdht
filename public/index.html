@@ -1125,23 +1125,50 @@
         </div>
     </section>
 
+   
     <!-- Videos Section -->
-    <section class="videos-section">
-        <div class="container">
-            <h2 class="section-title translate" data-key="featured_videos">Featured Videos</h2>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="video-container">
-                        <iframe src="videos/vd.mp4" title="Company Introduction" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
-                    <div class="video-description">
-                        <h4 class="translate" data-key="company_intro">Company Introduction</h4>
-                        <p class="translate" data-key="company_intro_desc">Learn about our mission, values, and the services we offer to our clients.</p>
-                    </div>
-                </div>
-            </div>
+<section class="videos-section py-5">
+  <div class="container">
+    <h2 class="section-title translate text-center mb-4" data-key="featured_videos">Featured Videos</h2>
+    <div class="row">
+      
+      <!-- First Video -->
+      <div class="col-md-6 mb-4">
+        <div class="video-container">
+          <video controls class="w-100 rounded">
+            <source src="videos/vd.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
         </div>
-    </section>
+        <div class="video-description mt-2">
+          <h4 class="translate" data-key="company_intro">Company Introduction</h4>
+          <p class="translate" data-key="company_intro_desc">
+            Learn about our mission, values, and the services we offer to our clients.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Second Video -->
+      <div class="col-md-6 mb-4">
+        <div class="video-container">
+          <video controls class="w-100 rounded">
+            <source src="videos/wg.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-description mt-2">
+          <h4 class="translate" data-key="service_overview">Service Overview</h4>
+          <p class="translate" data-key="service_overview_desc">
+            Get insights into our services and how we deliver value to our customers.
+          </p>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+
 
     <!-- Services Section -->
     <section class="services-section" id="services">
