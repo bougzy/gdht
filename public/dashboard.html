@@ -557,6 +557,46 @@
                 display: inline-block;
             }
         }
+
+        /* Add these styles to your existing CSS */
+
+.wallet-section {
+    border: 1px solid #e9ecef;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.wallet-address-item {
+    transition: all 0.3s ease;
+}
+
+.wallet-address {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+    font-size: 0.75rem;
+}
+
+.wallet-address:hover {
+    background-color: #e9ecef !important;
+    border-color: #3498db !important;
+}
+
+.wallet-address.copied {
+    background-color: #d4edda !important;
+    border-color: #28a745 !important;
+    color: #155724 !important;
+}
+
+.wallet-address small {
+    font-size: 0.7rem;
+}
+
+.btn-copy {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.7rem;
+    border-radius: 0.2rem;
+}
     </style>
 </head>
 <body>
@@ -690,6 +730,197 @@
                         </div>
                     </div>
                 </div>
+
+                <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .payment-container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .payment-header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        .wallet-card {
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .wallet-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transform: translateY(-3px);
+        }
+        .wallet-address {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            position: relative;
+            padding-right: 50px;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+        .proof-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        .currency-icon {
+            font-size: 24px;
+            margin-right: 10px;
+            color: #f7931a;
+        }
+        .usdt-icon {
+            color: #26a17b;
+        }
+        .alert-custom {
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            background-color: #6a11cb;
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+
+    <div class="container">
+        <div class="payment-container">
+            <div class="payment-header">
+                <h1><i class="fas fa-money-bill-wave me-2"></i>Make Payment</h1>
+                <p class="mb-0">Send payment to any of the wallet addresses below</p>
+            </div>
+            
+            <div class="p-4">
+                <!-- Alert for copied address -->
+                <div class="alert alert-success alert-custom" id="copyAlert">
+                    <i class="fas fa-check-circle me-2"></i> Wallet address copied to clipboard!
+                </div>
+                
+                <div class="mb-4">
+                    <h4><span class="step-number">1</span> Select Payment Method</h4>
+                    <p class="text-muted">Choose your preferred cryptocurrency and send payment to the provided address.</p>
+                </div>
+                
+                <!-- Bitcoin Wallet -->
+                <div class="wallet-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fab fa-btc currency-icon"></i>
+                        <div>
+                            <h5 class="mb-0">Bitcoin (BTC)</h5>
+                            <small class="text-muted">Send Bitcoin to this address</small>
+                        </div>
+                    </div>
+                    <div class="wallet-address">
+                        1Lx1qiCRcWkfKhX7mV5DEv42XNMrkkoecA
+                        <button class="copy-btn" onclick="copyAddress('1Lx1qiCRcWkfKhX7mV5DEv42XNMrkkoecA')">
+                            <i class="fas fa-copy me-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- USDT Wallet -->
+                <div class="wallet-card">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-coins currency-icon usdt-icon"></i>
+                        <div>
+                            <h5 class="mb-0">Tether (USDT)</h5>
+                            <small class="text-muted">Send USDT to this address</small>
+                        </div>
+                    </div>
+                    <div class="wallet-address">
+                        TCNzgQHdGMQVp7TN58SHwG5PKQTqG97TL8
+                        <button class="copy-btn" onclick="copyAddress('TCNzgQHdGMQVp7TN58SHwG5PKQTqG97TL8')">
+                            <i class="fas fa-copy me-1"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- <div class="proof-section">
+                    <div class="mb-3">
+                        <h4><span class="step-number">2</span> Submit Proof of Payment</h4>
+                        <p class="text-muted">After making payment, send the transaction details to our admin for verification.</p>
+                    </div>
+                    
+                    <form id="paymentForm">
+                        <div class="mb-3">
+                            <label for="transactionHash" class="form-label">Transaction Hash</label>
+                            <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="paymentAmount" class="form-label">Payment Amount</label>
+                            <input type="text" class="form-control" id="paymentAmount" placeholder="Enter the amount you sent" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="currency" class="form-label">Currency</label>
+                            <select class="form-select" id="currency" required>
+                                <option value="" selected disabled>Select currency</option>
+                                <option value="BTC">Bitcoin (BTC)</option>
+                                <option value="USDT">Tether (USDT)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Your Email</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Additional Notes (Optional)</label>
+                            <textarea class="form-control" id="message" rows="3" placeholder="Add any additional information about your payment"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="fas fa-paper-plane me-2"></i> Send Proof of Payment
+                        </button>
+                    </form>
+                </div> -->
+                
+                <div class="mt-4 text-center text-muted">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i> 
+                        Please double-check the wallet address before sending any payment. 
+                        Transactions cannot be reversed.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
                 
                 <!-- Dashboard Tabs -->
                 <div class="dashboard-tabs">
@@ -1526,6 +1757,43 @@
             document.getElementById('sidebarNotificationBadge').classList.add('d-none');
             alert('All notifications marked as read');
         }
+    </script>
+    <script>
+        // Function to copy wallet address to clipboard
+        function copyAddress(address) {
+            navigator.clipboard.writeText(address).then(function() {
+                // Show success alert
+                const alert = document.getElementById('copyAlert');
+                alert.style.display = 'block';
+                
+                // Hide alert after 3 seconds
+                setTimeout(function() {
+                    alert.style.display = 'none';
+                }, 3000);
+            }, function(err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy address. Please copy manually.');
+            });
+        }
+        
+        // Handle form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const transactionHash = document.getElementById('transactionHash').value;
+            const paymentAmount = document.getElementById('paymentAmount').value;
+            const currency = document.getElementById('currency').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+            
+            // In a real application, you would send this data to your server
+            // For this example, we'll just show an alert
+            alert(`Proof of payment submitted!\n\nTransaction Hash: ${transactionHash}\nAmount: ${paymentAmount} ${currency}\nEmail: ${email}\n\nWe will verify your payment and contact you shortly.`);
+            
+            // Reset the form
+            document.getElementById('paymentForm').reset();
+        });
     </script>
 </body>
 </html>

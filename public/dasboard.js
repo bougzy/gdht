@@ -805,6 +805,77 @@ async function loadInvestmentPlans() {
 }
 
 // Display investment plans
+// function displayInvestmentPlans() {
+//     const container = document.getElementById('investmentPlansContainer');
+//     container.innerHTML = '';
+    
+//     investmentPlans.forEach(plan => {
+//         const planCard = document.createElement('div');
+//         planCard.className = 'col-md-4';
+//         planCard.innerHTML = `
+//             <div class="card plan-card ${plan.name.toLowerCase().includes('basic') ? 'basic' : plan.name.toLowerCase().includes('premium') ? 'premium' : 'vip'}">
+//                 <div class="plan-header">
+//                     <h4>${escapeHtml(plan.name)}</h4>
+//                     <h3 class="text-primary">${plan.profitRate}% Profit</h3>
+//                     <p class="text-muted">${plan.duration}</p>
+//                 </div>
+//                 <div class="plan-body">
+//                     <p>${escapeHtml(plan.description)}</p>
+//                     <ul class="plan-features">
+//                         <li><i class="fas fa-check text-success me-2"></i> Min: $${plan.minDeposit}</li>
+//                         <li><i class="fas fa-check text-success me-2"></i> Max: $${plan.maxDeposit}</li>
+//                         <li><i class="fas fa-check text-success me-2"></i> ${plan.profitRate}% Return</li>
+//                         <li><i class="fas fa-check text-success me-2"></i> Secure Investment</li>
+//                     </ul>
+//                     <div class="mt-3">
+//                         <h6>Wallet Address for Payment:</h6>
+//                         <div class="wallet-address mb-2" onclick="copyWalletAddress('${plan.name}')">
+//                             ${getWalletAddress(plan.name)}
+//                         </div>
+//                         <small class="text-muted">Click to copy wallet address</small>
+//                     </div>
+//                     <button class="btn btn-primary-custom w-100 mt-3" onclick="openInvestmentModal('${plan._id}')">
+//                         Invest Now
+//                     </button>
+//                 </div>
+//             </div>
+//         `;
+//         container.appendChild(planCard);
+//     });
+// }
+
+// Get wallet address based on plan
+// function getWalletAddress(planName) {
+//     // These would typically come from your backend
+//     const addresses = {
+//         'Basic Plan': 'TCNzgQHdGMQVp7TN58SHwG5PKQTqG97TL8',
+//         'Premium Plan': 'TCNzgQHdGMQVp7TN58SHwG5PKQTqG97TL8',
+//         'VIP Plan': '1Lx1qiCRcWkfKhX7mV5DEv42XNMrkkoecA'
+//     };
+    
+//     return addresses[planName] || 'Wallet address not available';
+// }
+
+// Copy wallet address to clipboard
+// function copyWalletAddress(planName) {
+//     const address = getWalletAddress(planName);
+//     navigator.clipboard.writeText(address).then(() => {
+//         // Visual feedback
+//         const walletElement = event.target;
+//         walletElement.classList.add('copied');
+//         walletElement.innerHTML = `<i class="fas fa-check me-2"></i>Copied!`;
+        
+//         setTimeout(() => {
+//             walletElement.classList.remove('copied');
+//             walletElement.textContent = address;
+//         }, 2000);
+        
+//         showToast('Address Copied', 'Wallet address copied to clipboard', 'success');
+//     });
+// }
+
+
+// Display investment plans with wallet addresses
 function displayInvestmentPlans() {
     const container = document.getElementById('investmentPlansContainer');
     container.innerHTML = '';
@@ -812,6 +883,10 @@ function displayInvestmentPlans() {
     investmentPlans.forEach(plan => {
         const planCard = document.createElement('div');
         planCard.className = 'col-md-4';
+        
+        // Get wallet address based on plan
+        const walletInfo = getWalletAddressForPlan(plan.name);
+        
         planCard.innerHTML = `
             <div class="card plan-card ${plan.name.toLowerCase().includes('basic') ? 'basic' : plan.name.toLowerCase().includes('premium') ? 'premium' : 'vip'}">
                 <div class="plan-header">
@@ -827,13 +902,40 @@ function displayInvestmentPlans() {
                         <li><i class="fas fa-check text-success me-2"></i> ${plan.profitRate}% Return</li>
                         <li><i class="fas fa-check text-success me-2"></i> Secure Investment</li>
                     </ul>
-                    <div class="mt-3">
-                        <h6>Wallet Address for Payment:</h6>
-                        <div class="wallet-address mb-2" onclick="copyWalletAddress('${plan.name}')">
-                            ${getWalletAddress(plan.name)}
+                    
+                    <!-- Wallet Address Section -->
+                    <div class="wallet-section mt-4 p-3 bg-light rounded">
+                        <h6 class="mb-3 text-center">Payment Wallet Address</h6>
+                        
+                        <!-- Bitcoin Wallet -->
+                        <div class="wallet-address-item mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="fw-bold text-dark">Bitcoin (BTC):</small>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="copyWalletAddress('${walletInfo.btc.address}', 'BTC')">
+                                    <i class="fas fa-copy fa-xs"></i>
+                                </button>
+                            </div>
+                            <div class="wallet-address bg-white p-2 rounded border" onclick="copyWalletAddress('${walletInfo.btc.address}', 'BTC')">
+                                <small class="text-muted font-monospace">${walletInfo.btc.address}</small>
+                            </div>
                         </div>
-                        <small class="text-muted">Click to copy wallet address</small>
+                        
+                        <!-- USDT Wallet -->
+                        <div class="wallet-address-item">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="fw-bold text-dark">Tether (USDT):</small>
+                                <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="copyWalletAddress('${walletInfo.usdt.address}', 'USDT')">
+                                    <i class="fas fa-copy fa-xs"></i>
+                                </button>
+                            </div>
+                            <div class="wallet-address bg-white p-2 rounded border" onclick="copyWalletAddress('${walletInfo.usdt.address}', 'USDT')">
+                                <small class="text-muted font-monospace">${walletInfo.usdt.address}</small>
+                            </div>
+                        </div>
+                        
+                        <small class="text-muted d-block mt-2 text-center">Click address or copy button to copy</small>
                     </div>
+                    
                     <button class="btn btn-primary-custom w-100 mt-3" onclick="openInvestmentModal('${plan._id}')">
                         Invest Now
                     </button>
@@ -845,32 +947,51 @@ function displayInvestmentPlans() {
 }
 
 // Get wallet address based on plan
-function getWalletAddress(planName) {
-    // These would typically come from your backend
-    const addresses = {
-        'Basic Plan': '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-        'Premium Plan': '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy',
-        'VIP Plan': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
+function getWalletAddressForPlan(planName) {
+    // These would typically come from your backend or configuration
+    const walletAddresses = {
+        'Basic Plan': {
+            btc: { address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', type: 'BTC' },
+            usdt: { address: 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B', type: 'USDT' }
+        },
+        'Premium Plan': {
+            btc: { address: '3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy', type: 'BTC' },
+            usdt: { address: 'TCNzgQHdGMQVp7TN58SHwG5PKQTqG97TL8', type: 'USDT' }
+        },
+        'VIP Plan': {
+            btc: { address: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh', type: 'BTC' },
+            usdt: { address: 'TEFg8vZJJ2SQ6X8Ew6Q2v2s7s5fG2h6mJ1', type: 'USDT' }
+        }
     };
     
-    return addresses[planName] || 'Wallet address not available';
+    // Default addresses if plan not found
+    const defaultAddresses = {
+        btc: { address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', type: 'BTC' },
+        usdt: { address: 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B', type: 'USDT' }
+    };
+    
+    return walletAddresses[planName] || defaultAddresses;
 }
 
-// Copy wallet address to clipboard
-function copyWalletAddress(planName) {
-    const address = getWalletAddress(planName);
+// Enhanced copy wallet address function
+function copyWalletAddress(address, coinType) {
     navigator.clipboard.writeText(address).then(() => {
         // Visual feedback
-        const walletElement = event.target;
+        const walletElement = event.target.closest('.wallet-address') || event.target;
+        const originalContent = walletElement.innerHTML;
+        
         walletElement.classList.add('copied');
-        walletElement.innerHTML = `<i class="fas fa-check me-2"></i>Copied!`;
+        walletElement.innerHTML = `<small><i class="fas fa-check me-1"></i>Copied ${coinType} address!</small>`;
         
         setTimeout(() => {
             walletElement.classList.remove('copied');
-            walletElement.textContent = address;
+            walletElement.innerHTML = originalContent;
         }, 2000);
         
-        showToast('Address Copied', 'Wallet address copied to clipboard', 'success');
+        showToast('Address Copied', `${coinType} wallet address copied to clipboard`, 'success');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        showToast('Copy Failed', 'Failed to copy wallet address', 'error');
     });
 }
 
@@ -891,6 +1012,99 @@ function copyReferralCode() {
         
         showToast('Referral Code Copied', 'Your referral code has been copied', 'success');
     });
+}
+
+// Update deposit method selection to show wallet addresses
+document.getElementById('depositMethod').addEventListener('change', function() {
+    const method = this.value;
+    const walletAddresses = {
+        'bitcoin': {
+            address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+            type: 'Bitcoin (BTC)'
+        },
+        'tether': {
+            address: 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B',
+            type: 'Tether (USDT TRC20)'
+        },
+        'bank': {
+            address: 'Bank Transfer Details: \nAccount: 123456789\nRouting: 021000021\nName: Galaxy Digital Holdings',
+            type: 'Bank Transfer'
+        }
+    };
+    
+    const selectedWallet = walletAddresses[method];
+    if (selectedWallet) {
+        // Create or update wallet info display
+        let walletInfo = document.getElementById('depositWalletInfo');
+        if (!walletInfo) {
+            walletInfo = document.createElement('div');
+            walletInfo.id = 'depositWalletInfo';
+            walletInfo.className = 'alert alert-info mt-3';
+            document.querySelector('#depositForm').insertBefore(walletInfo, document.querySelector('#depositForm button'));
+        }
+        
+        walletInfo.innerHTML = `
+            <h6>${selectedWallet.type} Wallet Address:</h6>
+            <div class="wallet-address bg-white p-2 rounded border my-2" onclick="copyWalletAddress('${selectedWallet.address}', '${selectedWallet.type}')">
+                <small class="text-muted font-monospace">${selectedWallet.address}</small>
+            </div>
+            <small class="text-muted">Click to copy wallet address</small>
+        `;
+    } else {
+        // Remove wallet info if no method selected
+        const walletInfo = document.getElementById('depositWalletInfo');
+        if (walletInfo) {
+            walletInfo.remove();
+        }
+    }
+});
+
+
+// Update profile form to show wallet addresses
+function loadProfileData() {
+    if (currentUser) {
+        document.getElementById('profileName').value = currentUser.name || '';
+        document.getElementById('profileEmail').value = currentUser.email || '';
+        document.getElementById('profileBitcoin').value = currentUser.bitcoinAccount || '';
+        document.getElementById('profileTether').value = currentUser.tetherTRC20Account || '';
+        document.getElementById('securityQuestion').value = currentUser.secretQuestion || '';
+        
+        // Add wallet addresses info
+        const walletInfoSection = document.getElementById('walletInfoSection');
+        if (!walletInfoSection) {
+            const profileCard = document.querySelector('#profileTab .card');
+            const walletHtml = `
+                <div class="card dashboard-card mt-4" id="walletInfoSection">
+                    <div class="card-body">
+                        <h4 class="card-title">Platform Wallet Addresses</h4>
+                        <p class="text-muted mb-3">Use these addresses for deposits and investments</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="wallet-address-item mb-3">
+                                    <h6>Bitcoin (BTC) Wallet:</h6>
+                                    <div class="wallet-address bg-light p-3 rounded border" onclick="copyWalletAddress('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'BTC')">
+                                        <small class="font-monospace">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</small>
+                                    </div>
+                                    <small class="text-muted">Click to copy</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="wallet-address-item mb-3">
+                                    <h6>Tether (USDT) Wallet:</h6>
+                                    <div class="wallet-address bg-light p-3 rounded border" onclick="copyWalletAddress('TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B', 'USDT')">
+                                        <small class="font-monospace">TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B</small>
+                                    </div>
+                                    <small class="text-muted">Click to copy</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            profileCard.insertAdjacentHTML('afterend', walletHtml);
+        }
+    }
 }
 
 // Open investment modal with selected plan
