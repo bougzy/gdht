@@ -309,18 +309,126 @@ async function fetchUserData() {
 }
 
 // Update dashboard with user data
+// function updateDashboardData() {
+//     if (currentUser) {
+//         document.getElementById('userName').textContent = currentUser.name;
+//         document.getElementById('walletBalance').textContent = currentUser.walletBalance ? currentUser.walletBalance.toFixed(2) : '0.00';
+//         document.getElementById('depositBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
+//         document.getElementById('totalInvested').textContent = currentUser.totalInvested ? currentUser.totalInvested.toFixed(2) : '0.00';
+//         document.getElementById('availableBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
+        
+//         // Update recent transactions in overview
+//         loadRecentTransactions();
+//     }
+// }
+
+// Enhanced function to fetch user data
+async function fetchUserData() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/me`, {
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                currentUser = result.data.user;
+                updateDashboardData();
+                
+                // ✅ FIX: Ensure user name and email are displayed
+                console.log('User data loaded:', currentUser);
+                
+                // Load additional data if not already loaded
+                if (document.getElementById('transactionsTab').classList.contains('active')) {
+                    loadTransactions();
+                }
+                if (document.getElementById('referralsTab').classList.contains('active')) {
+                    loadReferrals();
+                }
+                if (document.getElementById('investTab').classList.contains('active')) {
+                    loadActiveInvestments();
+                }
+                if (document.getElementById('notificationsTab').classList.contains('active')) {
+                    loadUserNotifications();
+                }
+                if (document.getElementById('earningsTab').classList.contains('active')) {
+                    loadUserEarnings();
+                }
+                if (document.getElementById('reportsTab').classList.contains('active')) {
+                    loadUserTransactionReports();
+                }
+            } else {
+                // Token is invalid, redirect to login
+                console.error('Failed to fetch user data:', result.message);
+                window.location.href = 'login.html';
+            }
+        } else {
+            // Token is invalid, redirect to login
+            console.error('HTTP error fetching user data:', response.status);
+            window.location.href = 'login.html';
+        }
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        // Don't redirect on network errors, just log
+    }
+}
+
+// Enhanced function to update dashboard with user data
 function updateDashboardData() {
     if (currentUser) {
-        document.getElementById('userName').textContent = currentUser.name;
+        // ✅ FIX: Properly display user name and ensure all user data is shown
+        document.getElementById('userName').textContent = currentUser.name || currentUser.username || 'User';
         document.getElementById('walletBalance').textContent = currentUser.walletBalance ? currentUser.walletBalance.toFixed(2) : '0.00';
         document.getElementById('depositBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
         document.getElementById('totalInvested').textContent = currentUser.totalInvested ? currentUser.totalInvested.toFixed(2) : '0.00';
         document.getElementById('availableBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
         
+        // ✅ FIX: Also update profile tab with user information
+        if (document.getElementById('profileName')) {
+            document.getElementById('profileName').value = currentUser.name || '';
+            document.getElementById('profileEmail').value = currentUser.email || '';
+        }
+        
         // Update recent transactions in overview
+        loadRecentTransactions();
+        
+        console.log('Dashboard updated with user:', currentUser.name, currentUser.email);
+    } else {
+        console.error('No current user data available');
+    }
+}
+
+
+function updateDashboardData() {
+    if (currentUser) {
+        document.getElementById('userName').textContent = currentUser.name || currentUser.username || 'User';
+        
+        // ✅ FIX: Display user email
+        const userEmailElement = document.getElementById('userEmail');
+        if (userEmailElement && currentUser.email) {
+            userEmailElement.textContent = currentUser.email;
+            userEmailElement.className = 'user-email text-muted';
+        }
+        
+        document.getElementById('walletBalance').textContent = currentUser.walletBalance ? currentUser.walletBalance.toFixed(2) : '0.00';
+        document.getElementById('depositBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
+        document.getElementById('totalInvested').textContent = currentUser.totalInvested ? currentUser.totalInvested.toFixed(2) : '0.00';
+        document.getElementById('availableBalance').textContent = currentUser.depositBalance ? currentUser.depositBalance.toFixed(2) : '0.00';
+        
+        // Update profile tab with user information
+        if (document.getElementById('profileName')) {
+            document.getElementById('profileName').value = currentUser.name || '';
+            document.getElementById('profileEmail').value = currentUser.email || '';
+        }
+        
         loadRecentTransactions();
     }
 }
+
+
 
 // Load recent transactions for overview tab
 async function loadRecentTransactions() {
@@ -422,6 +530,8 @@ function switchTab(tabName) {
             break;
     }
 }
+
+
 
 // Setup event listeners
 function setupEventListeners() {

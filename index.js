@@ -816,79 +816,150 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-app.post("/api/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+// app.post("/api/login", async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
     
-    if (user && await user.matchPassword(password)) {
-      if (user.isBlocked) {
-        return res.status(403).json({ 
-          success: false,
-          message: "Account blocked. Please contact support." 
-        });
-      }
+//     if (user && await user.matchPassword(password)) {
+//       if (user.isBlocked) {
+//         return res.status(403).json({ 
+//           success: false,
+//           message: "Account blocked. Please contact support." 
+//         });
+//       }
       
-      const rawIp = req.clientIp;
-      const cleanedIp = validateAndCleanIP(rawIp);
-      const locationData = getUserLocation(cleanedIp);
+//       const rawIp = req.clientIp;
+//       const cleanedIp = validateAndCleanIP(rawIp);
+//       const locationData = getUserLocation(cleanedIp);
 
-      await User.findByIdAndUpdate(user._id, {
-        $set: {
-          ipAddress: cleanedIp,
-          lastLogin: new Date(),
-          ...(locationData.country !== 'Unknown' && {
-            'location.country': locationData.country,
-            'location.city': locationData.city,
-            'location.coordinates.latitude': locationData.lat,
-            'location.coordinates.longitude': locationData.lon,
-            'location.lastUpdated': new Date()
-          })
-        },
-        $push: {
-          loginHistory: {
-            ip: cleanedIp,
-            location: locationData,
-            timestamp: new Date(),
-            event: 'login'
-          }
-        }
-      });
+//       await User.findByIdAndUpdate(user._id, {
+//         $set: {
+//           ipAddress: cleanedIp,
+//           lastLogin: new Date(),
+//           ...(locationData.country !== 'Unknown' && {
+//             'location.country': locationData.country,
+//             'location.city': locationData.city,
+//             'location.coordinates.latitude': locationData.lat,
+//             'location.coordinates.longitude': locationData.lon,
+//             'location.lastUpdated': new Date()
+//           })
+//         },
+//         $push: {
+//           loginHistory: {
+//             ip: cleanedIp,
+//             location: locationData,
+//             timestamp: new Date(),
+//             event: 'login'
+//           }
+//         }
+//       });
 
-      const userResponse = await User.findById(user._id).select("-password -secretAnswer -confirmPassword");
+//       const userResponse = await User.findById(user._id).select("-password -secretAnswer -confirmPassword");
 
-      return res.json({
-        success: true,
-        data: {
-          _id: user._id, 
-          username: user.username,
-          name: user.name, 
-          email: user.email, 
-          walletBalance: user.walletBalance,
-          depositBalance: user.depositBalance,
-          totalInvested: user.totalInvested,
-          token: generateToken(user._id, user.role),
-          user: userResponse
-        },
-        message: "Login successful"
-      });
-    }
-    res.status(401).json({ 
-      success: false,
-      message: "Invalid email or password" 
-    });
-  } catch (error) { 
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false,
-      message: "Login failed. Please try again." 
-    }); 
-  }
-});
+//       return res.json({
+//         success: true,
+//         data: {
+//           _id: user._id, 
+//           username: user.username,
+//           name: user.name, 
+//           email: user.email, 
+//           walletBalance: user.walletBalance,
+//           depositBalance: user.depositBalance,
+//           totalInvested: user.totalInvested,
+//           token: generateToken(user._id, user.role),
+//           user: userResponse
+//         },
+//         message: "Login successful"
+//       });
+//     }
+//     res.status(401).json({ 
+//       success: false,
+//       message: "Invalid email or password" 
+//     });
+//   } catch (error) { 
+//     console.error('Login error:', error);
+//     res.status(500).json({ 
+//       success: false,
+//       message: "Login failed. Please try again." 
+//     }); 
+//   }
+// });
 
 // ================== ENHANCED ADMIN ROUTES ==================
 
 // Admin Dashboard with Complete Statistics
+
+
+
+app.post("/api/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+        
+        if (user && await user.matchPassword(password)) {
+            if (user.isBlocked) {
+                return res.status(403).json({ 
+                    success: false,
+                    message: "Account blocked. Please contact support." 
+                });
+            }
+            
+            const rawIp = req.clientIp;
+            const cleanedIp = validateAndCleanIP(rawIp);
+            const locationData = getUserLocation(cleanedIp);
+
+            await User.findByIdAndUpdate(user._id, {
+                $set: {
+                    ipAddress: cleanedIp,
+                    lastLogin: new Date(),
+                    ...(locationData.country !== 'Unknown' && {
+                        'location.country': locationData.country,
+                        'location.city': locationData.city,
+                        'location.coordinates.latitude': locationData.lat,
+                        'location.coordinates.longitude': locationData.lon,
+                        'location.lastUpdated': new Date()
+                    })
+                },
+                $push: {
+                    loginHistory: {
+                        ip: cleanedIp,
+                        location: locationData,
+                        timestamp: new Date(),
+                        event: 'login'
+                    }
+                }
+            });
+
+            const userResponse = await User.findById(user._id).select("-password -secretAnswer -confirmPassword");
+
+            // ✅ FIX: Ensure complete user data is returned
+            return res.json({
+                success: true,
+                data: {
+                    user: userResponse, // This contains all user data including name and email
+                    token: generateToken(user._id, user.role)
+                },
+                message: "Login successful"
+            });
+        }
+        res.status(401).json({ 
+            success: false,
+            message: "Invalid email or password" 
+        });
+    } catch (error) { 
+        console.error('Login error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: "Login failed. Please try again." 
+        }); 
+    }
+});
+
+
+
+
+
 app.get("/api/admin/dashboard-stats", adminAuth, async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();

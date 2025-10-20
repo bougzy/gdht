@@ -716,7 +716,7 @@
         <!-- Dashboard Page -->
         <section class="dashboard-section">
             <div class="container">
-                <div class="row">
+                <!-- <div class="row">
                     <div class="col-12">
                         <h1 class="user-welcome">Welcome, <span id="userName">User</span>!</h1>
                         <p>Welcome to Galaxy Digital Holding Trade Company</p>
@@ -729,7 +729,25 @@
                             <small class="text-muted" id="lastUpdate">Last update: Just now</small>
                         </div>
                     </div>
-                </div>
+                </div> -->
+
+
+                <!-- In the dashboard section, add user email display -->
+<div class="row">
+    <div class="col-12">
+        <h1 class="user-welcome">Welcome, <span id="userName">User</span>!</h1>
+        <p class="user-email" id="userEmail"></p> <!-- Add this line -->
+        <p>Welcome to Galaxy Digital Holding Trade Company</p>
+        <p>Welcome to Galaxy Digital Holding Trade Company Glance of your investment account. Have Fun!!</p>
+        <div class="d-flex align-items-center mb-3">
+            <span class="badge bg-success me-2 connection-status" id="realTimeStatus">
+                <span class="status-indicator status-connected" id="connectionIndicator"></span>
+                Real-time Updates Active
+            </span>
+            <small class="text-muted" id="lastUpdate">Last update: Just now</small>
+        </div>
+    </div>
+</div>
 
                 <style>
         body {

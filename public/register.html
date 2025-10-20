@@ -242,60 +242,120 @@
         }
 
         // Handle registration
-        async function handleRegister(e) {
-            e.preventDefault();
-            const formData = {
-                username: document.getElementById('username').value,
-                name: document.getElementById('name').value,
-                email: document.getElementById('registerEmail').value,
-                password: document.getElementById('registerPassword').value,
-                confirmPassword: document.getElementById('confirmPassword').value,
-                secretQuestion: document.getElementById('secretQuestion').value,
-                secretAnswer: document.getElementById('secretAnswer').value,
-                bitcoinAccount: document.getElementById('bitcoinAccount').value || undefined,
-                tetherTRC20Account: document.getElementById('tetherTRC20Account').value || undefined,
-                referralCode: document.getElementById('referralCode').value || undefined,
-                agreedToTerms: document.getElementById('agreeTerms').checked
-            };
+        // async function handleRegister(e) {
+        //     e.preventDefault();
+        //     const formData = {
+        //         username: document.getElementById('username').value,
+        //         name: document.getElementById('name').value,
+        //         email: document.getElementById('registerEmail').value,
+        //         password: document.getElementById('registerPassword').value,
+        //         confirmPassword: document.getElementById('confirmPassword').value,
+        //         secretQuestion: document.getElementById('secretQuestion').value,
+        //         secretAnswer: document.getElementById('secretAnswer').value,
+        //         bitcoinAccount: document.getElementById('bitcoinAccount').value || undefined,
+        //         tetherTRC20Account: document.getElementById('tetherTRC20Account').value || undefined,
+        //         referralCode: document.getElementById('referralCode').value || undefined,
+        //         agreedToTerms: document.getElementById('agreeTerms').checked
+        //     };
             
-            const alertEl = document.getElementById('registerAlert');
+        //     const alertEl = document.getElementById('registerAlert');
             
-            try {
-                const response = await fetch(`${API_BASE_URL}/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
+        //     try {
+        //         const response = await fetch(`${API_BASE_URL}/register`, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify(formData)
+        //         });
                 
-                const result = await response.json();
+        //         const result = await response.json();
                 
-                if (result.success) {
-                    // Successful registration - redirect to login page
-                    alertEl.className = 'alert alert-success';
-                    alertEl.textContent = 'Registration successful! Please login with your credentials.';
-                    alertEl.classList.remove('d-none');
+        //         if (result.success) {
+        //             // Successful registration - redirect to login page
+        //             alertEl.className = 'alert alert-success';
+        //             alertEl.textContent = 'Registration successful! Please login with your credentials.';
+        //             alertEl.classList.remove('d-none');
                     
-                    // Clear form
-                    document.getElementById('registerForm').reset();
+        //             // Clear form
+        //             document.getElementById('registerForm').reset();
                     
-                    // Redirect to login page after 2 seconds
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 2000);
-                } else {
-                    alertEl.className = 'alert alert-danger';
-                    alertEl.textContent = result.message;
-                    alertEl.classList.remove('d-none');
-                }
-            } catch (error) {
-                console.error('Registration error:', error);
-                alertEl.className = 'alert alert-danger';
-                alertEl.textContent = 'An error occurred during registration. Please try again.';
-                alertEl.classList.remove('d-none');
-            }
+        //             // Redirect to login page after 2 seconds
+        //             setTimeout(() => {
+        //                 window.location.href = 'login.html';
+        //             }, 2000);
+        //         } else {
+        //             alertEl.className = 'alert alert-danger';
+        //             alertEl.textContent = result.message;
+        //             alertEl.classList.remove('d-none');
+        //         }
+        //     } catch (error) {
+        //         console.error('Registration error:', error);
+        //         alertEl.className = 'alert alert-danger';
+        //         alertEl.textContent = 'An error occurred during registration. Please try again.';
+        //         alertEl.classList.remove('d-none');
+        //     }
+        // }
+   
+
+        // Handle registration - UPDATED VERSION
+async function handleRegister(e) {
+    e.preventDefault();
+    const formData = {
+        username: document.getElementById('username').value,
+        name: document.getElementById('name').value,
+        email: document.getElementById('registerEmail').value,
+        password: document.getElementById('registerPassword').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+        secretQuestion: document.getElementById('secretQuestion').value,
+        secretAnswer: document.getElementById('secretAnswer').value,
+        bitcoinAccount: document.getElementById('bitcoinAccount').value || undefined,
+        tetherTRC20Account: document.getElementById('tetherTRC20Account').value || undefined,
+        referralCode: document.getElementById('referralCode').value || undefined,
+        agreedToTerms: document.getElementById('agreeTerms').checked
+    };
+    
+    const alertEl = document.getElementById('registerAlert');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // ✅ FIX: Store token and user data, then redirect to dashboard
+            const token = result.data.token;
+            localStorage.setItem('authToken', token);
+            localStorage.setItem('isAdmin', 'false');
+            
+            alertEl.className = 'alert alert-success';
+            alertEl.textContent = 'Registration successful! Redirecting to dashboard...';
+            alertEl.classList.remove('d-none');
+            
+            // ✅ FIX: Redirect to dashboard immediately with the received token
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+            
+        } else {
+            alertEl.className = 'alert alert-danger';
+            alertEl.textContent = result.message;
+            alertEl.classList.remove('d-none');
         }
-    </script>
+    } catch (error) {
+        console.error('Registration error:', error);
+        alertEl.className = 'alert alert-danger';
+        alertEl.textContent = 'An error occurred during registration. Please try again.';
+        alertEl.classList.remove('d-none');
+    }
+}
+
+   </script>
 </body>
 </html>
