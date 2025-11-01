@@ -241,61 +241,7 @@
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
         }
 
-        // Handle registration
-        // async function handleRegister(e) {
-        //     e.preventDefault();
-        //     const formData = {
-        //         username: document.getElementById('username').value,
-        //         name: document.getElementById('name').value,
-        //         email: document.getElementById('registerEmail').value,
-        //         password: document.getElementById('registerPassword').value,
-        //         confirmPassword: document.getElementById('confirmPassword').value,
-        //         secretQuestion: document.getElementById('secretQuestion').value,
-        //         secretAnswer: document.getElementById('secretAnswer').value,
-        //         bitcoinAccount: document.getElementById('bitcoinAccount').value || undefined,
-        //         tetherTRC20Account: document.getElementById('tetherTRC20Account').value || undefined,
-        //         referralCode: document.getElementById('referralCode').value || undefined,
-        //         agreedToTerms: document.getElementById('agreeTerms').checked
-        //     };
-            
-        //     const alertEl = document.getElementById('registerAlert');
-            
-        //     try {
-        //         const response = await fetch(`${API_BASE_URL}/register`, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json'
-        //             },
-        //             body: JSON.stringify(formData)
-        //         });
-                
-        //         const result = await response.json();
-                
-        //         if (result.success) {
-        //             // Successful registration - redirect to login page
-        //             alertEl.className = 'alert alert-success';
-        //             alertEl.textContent = 'Registration successful! Please login with your credentials.';
-        //             alertEl.classList.remove('d-none');
-                    
-        //             // Clear form
-        //             document.getElementById('registerForm').reset();
-                    
-        //             // Redirect to login page after 2 seconds
-        //             setTimeout(() => {
-        //                 window.location.href = 'login.html';
-        //             }, 2000);
-        //         } else {
-        //             alertEl.className = 'alert alert-danger';
-        //             alertEl.textContent = result.message;
-        //             alertEl.classList.remove('d-none');
-        //         }
-        //     } catch (error) {
-        //         console.error('Registration error:', error);
-        //         alertEl.className = 'alert alert-danger';
-        //         alertEl.textContent = 'An error occurred during registration. Please try again.';
-        //         alertEl.classList.remove('d-none');
-        //     }
-        // }
+        
    
 
         // Handle registration - UPDATED VERSION
