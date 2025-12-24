@@ -332,6 +332,10 @@
                     localStorage.setItem('authToken', authToken);
                     localStorage.setItem('isAdmin', 'false');
                     isAdmin = false;
+
+                     // ADD THESE LINES TO STORE USER DATA:
+                    localStorage.setItem('userName', result.data.name || result.data.username);
+                    localStorage.setItem('userEmail', result.data.email);
                     
                     // Show success message
                     alertEl.className = 'alert alert-success';

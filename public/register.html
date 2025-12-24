@@ -279,7 +279,13 @@ async function handleRegister(e) {
             const token = result.data.token;
             localStorage.setItem('authToken', token);
             localStorage.setItem('isAdmin', 'false');
+
+
+            // ADD THESE LINES TO STORE USER DATA:
+            localStorage.setItem('userName', result.data.name || result.data.username);
+            localStorage.setItem('userEmail', result.data.email);
             
+    
             alertEl.className = 'alert alert-success';
             alertEl.textContent = 'Registration successful! Redirecting to dashboard...';
             alertEl.classList.remove('d-none');
