@@ -1805,8 +1805,8 @@ function initializeDashboard() {
     const userEmail = localStorage.getItem('userEmail');
     
     // Set the form values with actual user data
-    document.getElementById('profileName').value = userName || 'John Doe';
-    document.getElementById('profileEmail').value = userEmail || 'john.doe@example.com';
+    document.getElementById('profileName').value = userName || '';
+    document.getElementById('profileEmail').value = userEmail || '';
     
     // These would typically come from an API call
     document.getElementById('profileBitcoin').value = localStorage.getItem('bitcoinWallet') || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
