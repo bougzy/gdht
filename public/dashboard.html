@@ -1550,13 +1550,42 @@ function initializeDashboard() {
         document.getElementById('userName').textContent = userName;
     }
     
-    // Update the user email display (you need to add this element)
+        // Initialize dashboard with sample data
+function initializeDashboard() {
+    // Set user name from localStorage instead of hardcoded
+    const userName = localStorage.getItem('userName');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Update the welcome message
+    if (userName) {
+        document.getElementById('userName').textContent = userName;
+    }
+    
+    // Update the user email display
     if (userEmail) {
         const userEmailElement = document.getElementById('userEmail');
         if (userEmailElement) {
             userEmailElement.textContent = userEmail;
         }
     }
+    
+    // Set initial balances
+    document.getElementById('walletBalance').textContent = '1,250.75';
+    document.getElementById('depositBalance').textContent = '5,000.00';
+    document.getElementById('totalInvested').textContent = '15,500.00';
+    
+    // Set referral code
+    document.getElementById('referralCodeDisplay').value = 'GALAXY12345';
+    
+    // Set notification count
+    document.getElementById('notificationBadge').textContent = '3';
+    document.getElementById('notificationBadge').classList.remove('d-none');
+    document.getElementById('sidebarNotificationBadge').textContent = '3';
+    document.getElementById('sidebarNotificationBadge').classList.remove('d-none');
+    
+    // Load initial tab data
+    loadTabData('overview');
+}
     
     // Set initial balances
     document.getElementById('walletBalance').textContent = '1,250.75';
@@ -1770,19 +1799,19 @@ function initializeDashboard() {
         }
 
 
-                    function loadProfileData() {
-                // Get user data from localStorage
-                const userName = localStorage.getItem('userName');
-                const userEmail = localStorage.getItem('userEmail');
-                
-                // Set the form values with actual user data
-                document.getElementById('profileName').value = userName || 'John Doe';
-                document.getElementById('profileEmail').value = userEmail || 'john.doe@example.com';
-                
-                // These would typically come from an API call
-                document.getElementById('profileBitcoin').value = localStorage.getItem('bitcoinWallet') || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
-                document.getElementById('profileTether').value = localStorage.getItem('tetherWallet') || 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B';
-            }
+                 function loadProfileData() {
+    // Get user data from localStorage
+    const userName = localStorage.getItem('userName');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Set the form values with actual user data
+    document.getElementById('profileName').value = userName || 'John Doe';
+    document.getElementById('profileEmail').value = userEmail || 'john.doe@example.com';
+    
+    // These would typically come from an API call
+    document.getElementById('profileBitcoin').value = localStorage.getItem('bitcoinWallet') || '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+    document.getElementById('profileTether').value = localStorage.getItem('tetherWallet') || 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B';
+}
         
         // function loadProfileData() {
         //     // This would typically make an API call
@@ -1883,7 +1912,8 @@ function initializeDashboard() {
             document.getElementById('paymentForm').reset();
         });
 
-        function handleLogout() {
+      
+function handleLogout() {
     // Clear all user data from localStorage
     localStorage.removeItem('authToken');
     localStorage.removeItem('isAdmin');
@@ -1911,6 +1941,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Rest of your existing initialization code...
 });
+
     </script>
 </body>
 </html>
