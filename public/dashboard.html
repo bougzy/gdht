@@ -716,38 +716,26 @@
         <!-- Dashboard Page -->
         <section class="dashboard-section">
             <div class="container">
-                <!-- <div class="row">
-                    <div class="col-12">
-                        <h1 class="user-welcome">Welcome, <span id="userName">User</span>!</h1>
-                        <p>Welcome to Galaxy Digital Holding Trade Company</p>
-                        <p>Welcome to Galaxy Digital Holding Trade Company Glance of your investment account. Have Fun!!</p>
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="badge bg-success me-2 connection-status" id="realTimeStatus">
-                                <span class="status-indicator status-connected" id="connectionIndicator"></span>
-                                Real-time Updates Active
-                            </span>
-                            <small class="text-muted" id="lastUpdate">Last update: Just now</small>
-                        </div>
-                    </div>
-                </div> -->
+               
 
 
                 <!-- In the dashboard section, add user email display -->
-                <div class="row">
-                    <div class="col-12">
-                        <h1 class="user-welcome">Welcome, <span id="userName">User</span>!</h1>
-                        <p class="user-email" id="userEmail" style="font-size: 1.2rem; color: #666; margin-bottom: 10px;"></p>
-                        <p>Welcome to Galaxy Digital Holding Trade Company</p>
-                        <p>Welcome to Galaxy Digital Holding Trade Company Glance of your investment account. Have Fun!!</p>
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="badge bg-success me-2 connection-status" id="realTimeStatus">
-                                <span class="status-indicator status-connected" id="connectionIndicator"></span>
-                                Real-time Updates Active
-                            </span>
-                            <small class="text-muted" id="lastUpdate">Last update: Just now</small>
-                        </div>
-                    </div>
-                </div>
+               <!-- In the dashboard section, add user email display -->
+<div class="row">
+    <div class="col-12">
+        <h1 class="user-welcome">Welcome, <span id="userName">User</span>!</h1>
+        <p class="user-email" id="userEmail" style="font-size: 1.2rem; color: #666; margin-bottom: 10px;"></p>
+        <p>Welcome to Galaxy Digital Holding Trade Company</p>
+        <p>Welcome to Galaxy Digital Holding Trade Company Glance of your investment account. Have Fun!!</p>
+        <div class="d-flex align-items-center mb-3">
+            <span class="badge bg-success me-2 connection-status" id="realTimeStatus">
+                <span class="status-indicator status-connected" id="connectionIndicator"></span>
+                Real-time Updates Active
+            </span>
+            <small class="text-muted" id="lastUpdate">Last update: Just now</small>
+        </div>
+    </div>
+</div>
 
                 <style>
         body {
@@ -892,42 +880,7 @@
                     </div>
                 </div>
                 
-                <!-- <div class="proof-section">
-                    <div class="mb-3">
-                        <h4><span class="step-number">2</span> Submit Proof of Payment</h4>
-                        <p class="text-muted">After making payment, send the transaction details to our admin for verification.</p>
-                    </div>
-                    
-                    <form id="paymentForm">
-                        <div class="mb-3">
-                            <label for="transactionHash" class="form-label">Transaction Hash</label>
-                            <input type="text" class="form-control" id="transactionHash" placeholder="Enter your transaction hash" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="paymentAmount" class="form-label">Payment Amount</label>
-                            <input type="text" class="form-control" id="paymentAmount" placeholder="Enter the amount you sent" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="currency" class="form-label">Currency</label>
-                            <select class="form-select" id="currency" required>
-                                <option value="" selected disabled>Select currency</option>
-                                <option value="BTC">Bitcoin (BTC)</option>
-                                <option value="USDT">Tether (USDT)</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Your Email</label>
-                            <input type="email" class="form-control" id="email" placeholder="Enter your email address" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="message" class="form-label">Additional Notes (Optional)</label>
-                            <textarea class="form-control" id="message" rows="3" placeholder="Add any additional information about your payment"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 py-2">
-                            <i class="fas fa-paper-plane me-2"></i> Send Proof of Payment
-                        </button>
-                    </form>
-                </div> -->
+               
                 
                 <div class="mt-4 text-center text-muted">
                     <small>
@@ -1606,28 +1559,44 @@ function initializeDashboard() {
 }
 
         // Initialize dashboard with sample data
+       
         function initializeDashboard() {
-            // Set user name
-            document.getElementById('userName').textContent = '';
-            
-            // Set initial balances
-            document.getElementById('walletBalance').textContent = '1,250.75';
-            document.getElementById('depositBalance').textContent = '5,000.00';
-            document.getElementById('totalInvested').textContent = '15,500.00';
-            
-            // Set referral code
-            document.getElementById('referralCodeDisplay').value = 'GALAXY12345';
-            
-            // Set notification count
-            document.getElementById('notificationBadge').textContent = '3';
-            document.getElementById('notificationBadge').classList.remove('d-none');
-            document.getElementById('sidebarNotificationBadge').textContent = '3';
-            document.getElementById('sidebarNotificationBadge').classList.remove('d-none');
-            
-            // Load initial tab data
-            loadTabData('overview');
+    // Set user name from localStorage instead of hardcoded
+    const userName = localStorage.getItem('userName');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Update the welcome message
+    if (userName) {
+        document.getElementById('userName').textContent = userName;
+    }
+    
+    // Update the user email display
+    if (userEmail) {
+        const userEmailElement = document.getElementById('userEmail');
+        if (userEmailElement) {
+            userEmailElement.textContent = userEmail;
         }
-        
+    }
+    
+    // Set initial balances
+    document.getElementById('walletBalance').textContent = '1,250.75';
+    document.getElementById('depositBalance').textContent = '5,000.00';
+    document.getElementById('totalInvested').textContent = '15,500.00';
+    
+    // Set referral code
+    document.getElementById('referralCodeDisplay').value = 'GALAXY12345';
+    
+    // Set notification count
+    document.getElementById('notificationBadge').textContent = '3';
+    document.getElementById('notificationBadge').classList.remove('d-none');
+    document.getElementById('sidebarNotificationBadge').textContent = '3';
+    document.getElementById('sidebarNotificationBadge').classList.remove('d-none');
+    
+    // Load initial tab data
+    loadTabData('overview');
+}
+
+
         // Load data for specific tab
         function loadTabData(tabName) {
             switch(tabName) {
@@ -1799,7 +1768,7 @@ function initializeDashboard() {
         }
 
 
-                 function loadProfileData() {
+        function loadProfileData() {
     // Get user data from localStorage
     const userName = localStorage.getItem('userName');
     const userEmail = localStorage.getItem('userEmail');
@@ -1813,13 +1782,7 @@ function initializeDashboard() {
     document.getElementById('profileTether').value = localStorage.getItem('tetherWallet') || 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B';
 }
         
-        // function loadProfileData() {
-        //     // This would typically make an API call
-        //     document.getElementById('profileName').value = 'John Doe';
-        //     document.getElementById('profileEmail').value = 'john.doe@example.com';
-        //     document.getElementById('profileBitcoin').value = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
-        //     document.getElementById('profileTether').value = 'TYasvLVhQr7XqS7YwUc9f6T5qK9qK1qA2B';
-        // }
+        
         
         function openInvestmentModal(planName) {
             // Set the selected plan in the modal
